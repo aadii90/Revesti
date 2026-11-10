@@ -1,0 +1,47 @@
+[
+  {
+    "id": "esempio-felpa-con-cappuccio",
+    "nome": "Esempio – Felpa con cappuccio",
+    "reparto": "Donna",
+    "prezzo": 14.9,
+    "prezzo_pieno": 39.9,
+    "taglie": [
+      "S",
+      "M"
+    ],
+    "foto": "",
+    "altre_foto": [],
+    "descrizione": "Prodotto di esempio: modificalo o eliminalo dal pannello di gestione.",
+    "attivo": true,
+    "data": "2026-11-11T00:03:00.000Z"
+  },
+  {
+    "id": "esempio-camicia-in-lino",
+    "nome": "Esempio – Camicia in lino",
+    "reparto": "Uomo",
+    "prezzo": 12,
+    "taglie": [
+      "L"
+    ],
+    "foto": "",
+    "altre_foto": [],
+    "descrizione": "Prodotto di esempio: modificalo o eliminalo dal pannello di gestione.",
+    "attivo": true,
+    "data": "2026-11-11T00:02:00.000Z"
+  },
+  {
+    "id": "esempio-tuta-in-cotone",
+    "nome": "Esempio – Tuta in cotone",
+    "reparto": "Bambini",
+    "prezzo": 8.5,
+    "taglie": [
+      "4A",
+      "6A"
+    ],
+    "foto": "",
+    "altre_foto": [],
+    "descrizione": "Prodotto di esempio: modificalo o eliminalo dal pannello di gestione.",
+    "attivo": true,
+    "data": "2026-11-11T00:01:00.000Z"
+  }
+]
