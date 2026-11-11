@@ -59,6 +59,13 @@ header.top .wrap{display:flex;align-items:center;gap:12px;padding-block:12px}
 .noimg{width:100%;height:100%;display:grid;place-items:center;font-family:var(--display);font-size:40px;font-weight:800;color:var(--line)}
 .tag{position:absolute;top:8px;left:8px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:4px;background:var(--surface)}
 .tag.sale{background:var(--sale);color:#fff;left:auto;right:8px}
+.sell{font-weight:600;font-size:14px;color:var(--ink);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:7px 14px}
+footer .wrap{display:flex;gap:8px 20px;flex-wrap:wrap;justify-content:space-between}
+.flinks{display:flex;gap:16px;flex-wrap:wrap}
+.flinks a{color:var(--muted)}
+.by{color:var(--muted);font-size:13px}
+.ogroup{display:grid;gap:10px;border:1px solid var(--line);border-radius:10px;padding:12px}
+.ogroup h3{margin:0;font-size:15px;display:flex;justify-content:space-between;gap:10px;font-variant-numeric:tabular-nums}
 .card .nm{font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .price{font-variant-numeric:tabular-nums;font-weight:600;display:flex;gap:8px;align-items:baseline}
 .price s{color:var(--muted);font-weight:400;font-size:13px}
@@ -128,6 +135,7 @@ footer{border-top:1px solid var(--line);padding-block:24px calc(24px + env(safe-
 <header class="top">
   <div class="wrap">
     <div class="brand" id="brand">ReVesti</div>
+    <a class="sell" href="/vendi/">Vendi</a>
     <button class="cartbtn" id="cartBtn">Carrello <span class="n" id="cartN">0</span></button>
   </div>
 </header>
@@ -146,7 +154,7 @@ footer{border-top:1px solid var(--line);padding-block:24px calc(24px + env(safe-
   <div class="grid" id="grid"><div class="empty"><b>Caricamento catalogo…</b>I prodotti appariranno qui.</div></div>
 </main>
 
-<footer><div class="wrap" id="foot">ReVesti</div></footer>
+<footer><div class="wrap"><span id="foot">ReVesti</span><span class="flinks"><a href="/vendi/">Vendi i tuoi capi</a><a href="/privacy/">Privacy e regolamento</a></span></div></footer>
 
 <div class="scrim" id="pmodal" hidden></div>
 <div class="scrim drawer-scrim" id="cartScrim" hidden><aside class="drawer" id="drawer"></aside></div>
@@ -156,7 +164,7 @@ footer{border-top:1px solid var(--line);padding-block:24px calc(24px + env(safe-
 const eur=new Intl.NumberFormat("it-IT",{style:"currency",currency:"EUR"});
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const slug=t=>{let x=String(t||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")||"x";return /^[0-9]/.test(x)?"r-"+x:x};
+const slug=t=>{let x=String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")||"x";return /^[0-9]/.test(x)?"r-"+x:x};
 let products=[],depts=[],shop={},filter="tutti",query="";
 let cart=[];try{cart=JSON.parse(localStorage.getItem("revesti-cart")||"[]")||[]}catch(e){}
 const saveCart=()=>{try{localStorage.setItem("revesti-cart",JSON.stringify(cart))}catch(e){}renderCartN()};
@@ -202,6 +210,7 @@ function openProduct(id){
       <span class="muted cat-${p.cat}" style="font-weight:600;text-transform:uppercase;letter-spacing:.06em">${esc(p.reparto||"")}</span>
       <h2>${esc(p.nome)}</h2>
       <div class="price" style="font-size:20px">${eur.format(p.prezzo||0)}${onSale(p)?`<s>${eur.format(p.prezzo_pieno)}</s>`:""}</div>
+      ${p.venditore?`<div class="by">Venduto da <strong>${esc(p.venditore.nome)}</strong>: l'ordine arriva direttamente al venditore.</div>`:""}
       ${p.descrizione?`<p class="desc">${esc(p.descrizione)}</p>`:""}
       ${sizes.length?`<div><div class="muted" style="margin-bottom:6px">Taglia</div><div class="sizes">${sizes.map(s=>`<button class="size" data-s="${esc(s)}" aria-pressed="${s===chosen}">${esc(s)}</button>`).join("")}</div></div>`:""}
       <button class="btn" id="addBtn" ${sizes.length&&!chosen?"disabled":""}>${sizes.length&&!chosen?"Scegli una taglia":"Aggiungi al carrello"}</button>
@@ -222,46 +231,62 @@ function openProduct(id){
 
 function renderCartN(){$("cartN").textContent=cart.reduce((a,i)=>a+i.qty,0)}
 const cartLines=()=>cart.map(i=>({...i,p:products.find(p=>p.id===i.id)})).filter(i=>i.p);
-function orderText(lines,tot){return `Ciao! Vorrei ordinare da ${shop.nome||"ReVesti"}:\n`+lines.map(i=>`• ${i.qty} × ${i.p.nome}${i.size?` (taglia ${i.size})`:""} – ${eur.format(i.p.prezzo*i.qty)}`).join("\n")+`\nTotale: ${eur.format(tot)}\n\nNome:\nIndirizzo di spedizione:\nTelefono:`}
+const digits=v=>String(v||"").replace(/\D/g,"");
+function groups(lines){const m=new Map();
+  for(const i of lines){const v=i.p.venditore;const k=v?"v:"+digits(v.whatsapp)+":"+v.nome:"shop";
+    if(!m.has(k))m.set(k,{shop:!v,nome:v?v.nome:(shop.nome||"ReVesti"),wa:digits(v?v.whatsapp:shop.whatsapp),email:v?"":(shop.email||""),lines:[]});
+    m.get(k).lines.push(i)}
+  return [...m.values()]}
+const subtotal=g=>g.lines.reduce((a,i)=>a+i.p.prezzo*i.qty,0);
+function orderText(g){return (g.shop?`Ciao! Vorrei ordinare da ${g.nome}:\n`:`Ciao ${g.nome}! Ho visto i tuoi capi su ${shop.nome||"ReVesti"} e vorrei ordinare:\n`)
+  +g.lines.map(i=>`• ${i.qty} × ${i.p.nome}${i.size?` (taglia ${i.size})`:""} – ${eur.format(i.p.prezzo*i.qty)}`).join("\n")+`\nTotale: ${eur.format(subtotal(g))}\n\nNome:\nIndirizzo di spedizione:\nTelefono:`}
+const waHref=(wa,t)=>`https://wa.me/${wa}?text=${encodeURIComponent(t)}`;
+const mailHref=(em,t)=>`mailto:${em}?subject=${encodeURIComponent("Ordine "+(shop.nome||"ReVesti"))}&body=${encodeURIComponent(t)}`;
+let cartGroups=[];
 function renderDrawer(){
   const lines=cartLines(),tot=lines.reduce((a,i)=>a+i.p.prezzo*i.qty,0),d=$("drawer");
   const head=`<div class="row" style="justify-content:space-between"><h2>Carrello</h2><button class="mini" data-close>Chiudi</button></div>`;
   if(!lines.length){d.innerHTML=head+`<div class="empty"><b>Il carrello è vuoto</b>Scegli un articolo dalla vetrina.</div>`;return}
-  const txt=orderText(lines,tot),wa=String(shop.whatsapp||"").replace(/\D/g,"");
-  d.innerHTML=head+lines.map((i,k)=>`<div class="line"><div class="ph">${imgHTML(i.p)}</div><div style="min-width:0"><div style="font-weight:600">${esc(i.p.nome)}</div><div class="muted">${i.size?"Taglia "+esc(i.size)+" · ":""}${eur.format(i.p.prezzo)}</div></div>
+  cartGroups=groups(lines);const multi=cartGroups.length>1;
+  d.innerHTML=head+lines.map((i,k)=>`<div class="line"><div class="ph">${imgHTML(i.p)}</div><div style="min-width:0"><div style="font-weight:600">${esc(i.p.nome)}</div><div class="muted">${i.size?"Taglia "+esc(i.size)+" · ":""}${eur.format(i.p.prezzo)}${i.p.venditore?" · di "+esc(i.p.venditore.nome):""}</div></div>
       <div class="qty"><button data-dec="${k}" aria-label="Meno">−</button>${i.qty}<button data-inc="${k}" aria-label="Più">+</button></div></div>`).join("")+`
     <div class="total"><span>Totale</span><span>${eur.format(tot)}</span></div>
-    <div class="muted">Per ordinare invia questo messaggio. Completa nome e indirizzo.</div>
-    <textarea class="ordertext" id="otext">${esc(txt)}</textarea>
-    <div class="row">
-      ${wa?`<a class="btn" target="_blank" rel="noopener" id="waLink" href="https://wa.me/${wa}?text=${encodeURIComponent(txt)}">Invia su WhatsApp</a>`:""}
-      ${shop.email?`<a class="btn ghost" id="mailLink" href="mailto:${esc(shop.email)}?subject=${encodeURIComponent("Ordine "+(shop.nome||"ReVesti"))}&body=${encodeURIComponent(txt)}">Invia per email</a>`:""}
-      <button class="btn ghost" id="copyBtn">Copia</button>
-    </div>
-    <button class="mini" id="emptyCart" style="align-self:flex-start">Svuota carrello</button>`;
-  const ta=$("otext");ta.oninput=()=>{const l=$("waLink");if(l)l.href=`https://wa.me/${wa}?text=${encodeURIComponent(ta.value)}`;const m=$("mailLink");if(m)m.href=`mailto:${shop.email}?subject=${encodeURIComponent("Ordine "+(shop.nome||"ReVesti"))}&body=${encodeURIComponent(ta.value)}`};
+    <div class="muted">${multi?`Nel carrello ci sono capi di ${cartGroups.length} venditori: invia un messaggio a ciascuno. Completa nome e indirizzo.`:"Per ordinare invia questo messaggio. Completa nome e indirizzo."}</div>`
+    +cartGroups.map((g,gi)=>{const txt=orderText(g);return `<div class="${multi?"ogroup":""}" style="display:grid;gap:10px">
+      ${multi?`<h3><span>Ordine per ${esc(g.nome)}</span><span>${eur.format(subtotal(g))}</span></h3>`:""}
+      <textarea class="ordertext" id="otext-${gi}" data-g="${gi}" aria-label="Messaggio per ${esc(g.nome)}">${esc(txt)}</textarea>
+      <div class="row">
+        ${g.wa?`<a class="btn waLink" target="_blank" rel="noopener" id="wa-${gi}" href="${waHref(g.wa,txt)}">Invia su WhatsApp${multi||!g.shop?" a "+esc(g.nome):""}</a>`:""}
+        ${g.email?`<a class="btn ghost mailLink" id="mail-${gi}" href="${mailHref(g.email,txt)}">Invia per email</a>`:""}
+        <button class="btn ghost" data-copy="${gi}">Copia</button>
+      </div>
+      ${!g.wa&&!g.email?`<div class="note">Nessun contatto disponibile per questo ordine: copia il messaggio.</div>`:""}</div>`}).join("")
+    +`<button class="mini" id="emptyCart" style="align-self:flex-start">Svuota carrello</button>`;
 }
+$("drawer").addEventListener("input",e=>{const ta=e.target.closest(".ordertext");if(!ta)return;const gi=ta.dataset.g,g=cartGroups[+gi];
+  const l=$("wa-"+gi);if(l)l.href=waHref(g.wa,ta.value);const m=$("mail-"+gi);if(m)m.href=mailHref(g.email,ta.value)});
 $("cartBtn").onclick=()=>{renderDrawer();$("cartScrim").hidden=false};
 $("cartScrim").onclick=e=>{
   const s=$("cartScrim"),lines=cartLines();
   if(e.target===s||e.target.closest("[data-close]")){s.hidden=true;return}
   const inc=e.target.closest("[data-inc]"),dec=e.target.closest("[data-dec]");
   if(inc||dec){const i=lines[+(inc?inc.dataset.inc:dec.dataset.dec)];const c=cart.find(x=>x.id===i.id&&x.size===i.size);c.qty+=inc?1:-1;if(c.qty<1)cart.splice(cart.indexOf(c),1);saveCart();renderDrawer()}
-  if(e.target.id==="waLink"||e.target.id==="mailLink")track("w");
+  if(e.target.closest(".waLink,.mailLink"))track("w");
   if(e.target.id==="emptyCart"){cart=[];saveCart();renderDrawer()}
-  if(e.target.id==="copyBtn"){const ta=$("otext");navigator.clipboard.writeText(ta.value).then(()=>toast("Messaggio copiato"),()=>{ta.select();toast("Testo selezionato")})}
+  const cp=e.target.closest("[data-copy]");
+  if(cp){const ta=$("otext-"+cp.dataset.copy);navigator.clipboard.writeText(ta.value).then(()=>toast("Messaggio copiato"),()=>{ta.select();toast("Testo selezionato")})}
 };
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){$("pmodal").hidden=true;$("cartScrim").hidden=true}});
 
 const getJSON=u=>fetch(u,{cache:"no-cache"}).then(r=>r.ok?r.json():null).catch(()=>null);
-Promise.all([getJSON("data/prodotti.json"),getJSON("data/reparti.json"),getJSON("data/negozio.json")]).then(([pr,rp,ng])=>{
+Promise.all([getJSON("data/prodotti.json"),getJSON("data/reparti.json"),getJSON("data/negozio.json"),getJSON("/api/catalogo")]).then(([pr,rp,ng,vend])=>{
   shop=ng||{};
   if(shop.nome){$("brand").textContent=shop.nome;document.title=shop.nome;$("foot").textContent=shop.nome}
   if(shop.titolo)$("tagline").textContent=shop.titolo;
   if(shop.sottotitolo)$("sub").textContent=shop.sottotitolo;
   if(shop.whatsapp||shop.email)$("foot").textContent=`${shop.nome||"ReVesti"} · ${shop.whatsapp?"WhatsApp +"+String(shop.whatsapp).replace(/\D/g,""):""}${shop.whatsapp&&shop.email?" · ":""}${shop.email||""}`;
   depts=((rp&&rp.reparti)||[]).filter(d=>d&&d.nome).map(d=>({nome:d.nome,id:slug(d.nome)}));
-  products=(Array.isArray(pr)?pr:[]).filter(p=>p.attivo!==false&&p.nome).map(p=>({...p,cat:slug(p.reparto),taglie:Array.isArray(p.taglie)?p.taglie:String(p.taglie||"").split(",").map(s=>s.trim()).filter(Boolean)}));
+  products=[...(Array.isArray(pr)?pr:[]),...(Array.isArray(vend)?vend:[])].filter(p=>p&&p.attivo!==false&&p.nome).sort((a,b)=>String(b.data||"").localeCompare(String(a.data||""))).map(p=>({...p,cat:slug(p.reparto),taglie:Array.isArray(p.taglie)?p.taglie:String(p.taglie||"").split(",").map(s=>s.trim()).filter(Boolean)}));
   for(const p of products)if(p.reparto&&!depts.some(d=>d.id===p.cat))depts.push({nome:p.reparto,id:p.cat});
   cart=cart.filter(i=>products.some(p=>p.id===i.id));
   renderDepts();renderShop();renderCartN();

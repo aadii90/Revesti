@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Privacy e regolamento · ReVesti</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#F4F5F7;--surface:#FFFFFF;--ink:#14161B;--muted:#5E6472;--line:#DFE2E8;--accent:#1F4FD8;color-scheme:light}
+@media (prefers-color-scheme: dark){:root{--bg:#0F1115;--surface:#181B21;--ink:#ECEEF2;--muted:#9AA1AE;--line:#2A2F38;--accent:#7398FF;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.6}
+.wrap{max-width:720px;margin:0 auto;padding:24px max(16px,env(safe-area-inset-right,0px)) 60px max(16px,env(safe-area-inset-left,0px))}
+h1,h2{font-family:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;line-height:1.15;text-wrap:balance}
+h1{font-size:34px;margin:16px 0 8px} h2{font-size:22px;margin:32px 0 8px}
+a{color:var(--accent)} .muted{color:var(--muted);font-size:14px}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+li{margin-bottom:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="/">← Torna a ReVesti</a>
+  <h1>Informativa privacy</h1>
+  <p class="muted">Ultimo aggiornamento: novembre 2026</p>
+
+  <div class="box">
+    <strong>Chi tratta i dati.</strong> Il sito è gestito da <span id="tit">ReVesti</span>. Per qualsiasi richiesta sui tuoi dati puoi scrivere a: <span id="contatti">i contatti indicati in fondo alla pagina principale</span>.
+  </div>
+
+  <h2>Se visiti il sito</h2>
+  <ul>
+    <li>Non usiamo cookie di profilazione né pubblicità.</li>
+    <li>Contiamo le visite solo come totali del giorno (quante aperture, quali capi sono stati aperti), senza salvare chi sei.</li>
+    <li>Il carrello resta salvato solo sul tuo dispositivo.</li>
+    <li>L'ordine si invia con WhatsApp o email: i dati che scrivi nel messaggio (nome, indirizzo, telefono) arrivano direttamente a chi vende il capo, cioè ReVesti oppure il venditore indicato nella scheda.</li>
+  </ul>
+
+  <h2>Se ti registri come venditore</h2>
+  <ul>
+    <li><strong>Dati raccolti:</strong> email, nome scelto, numero WhatsApp, password (salvata in forma cifrata e non leggibile), i capi e le foto che carichi.</li>
+    <li><strong>A cosa servono:</strong> a creare il tuo account, pubblicare i tuoi capi dopo l'approvazione e farti ricevere gli ordini. La base è l'accordo che accetti registrandoti.</li>
+    <li><strong>Cosa è visibile agli altri:</strong> il nome scelto compare accanto ai tuoi capi; il numero WhatsApp viene usato per aprire la chat quando un cliente ordina un tuo capo. L'email non è pubblica.</li>
+    <li><strong>Email che ricevi:</strong> solo quelle di servizio (codice di conferma, recupero password, esito dell'approvazione).</li>
+    <li><strong>Per quanto tempo:</strong> finché l'account resta attivo. Puoi chiedere in ogni momento la cancellazione dell'account, dei capi e delle foto.</li>
+  </ul>
+
+  <h2>Servizi tecnici usati</h2>
+  <p>Per far funzionare il sito i dati passano da questi fornitori, che li trattano per nostro conto: Netlify (pubblicazione del sito e archivio di account, capi e foto), Brevo (invio delle email di servizio), GitHub (file del sito e catalogo del negozio), Google Fonts (caratteri della pagina: il tuo browser li scarica dai server di Google). Alcuni di questi fornitori hanno sede fuori dall'Unione Europea.</p>
+
+  <h2>I tuoi diritti</h2>
+  <p>Puoi chiedere di vedere, correggere o cancellare i tuoi dati, limitarne l'uso o riceverne una copia, scrivendo ai contatti indicati sopra. Hai anche il diritto di presentare reclamo al Garante per la protezione dei dati personali (garanteprivacy.it).</p>
+
+  <h2 id="regolamento">Regolamento per chi vende</h2>
+  <ul>
+    <li>Puoi mettere in vendita solo capi tuoi, descritti in modo veritiero, con foto reali del capo e indicazione di eventuali difetti.</li>
+    <li>Non sono ammessi capi contraffatti, rubati o la cui vendita è vietata.</li>
+    <li>Ogni capo viene controllato da ReVesti prima di andare online. ReVesti può rifiutare o rimuovere un capo e sospendere un account che non rispetta queste regole.</li>
+    <li>La vendita avviene direttamente tra te e il cliente: vi accordate voi su pagamento, spedizione e consegna. ReVesti non incassa pagamenti e non spedisce i capi dei venditori.</li>
+    <li>Quando un capo è venduto, segnalo come venduto o eliminalo dal tuo pannello.</li>
+    <li>Chi vende è responsabile del rispetto delle regole fiscali e di legge che lo riguardano.</li>
+  </ul>
+</div>
+<script>
+fetch("/data/negozio.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).then(n=>{if(!n)return;
+  if(n.nome)document.getElementById("tit").textContent=n.nome;
+  const c=[n.email,n.whatsapp?"WhatsApp +"+String(n.whatsapp).replace(/\D/g,""):""].filter(Boolean).join(" · ");
+  if(c)document.getElementById("contatti").textContent=c}).catch(()=>{});
+</script>
+</body>
+</html>

@@ -137,6 +137,17 @@ td{padding:8px;border-bottom:1px solid var(--line);vertical-align:middle}
 .vtop b{font-variant-numeric:tabular-nums}
 .vtable{max-height:260px;overflow:auto}
 @media (max-width:640px){#visPanel table{display:table;width:100%}#visPanel thead{display:table-header-group}#visPanel tbody{display:table-row-group}#visPanel tr{display:table-row;padding:0}#visPanel td,#visPanel th{display:table-cell;padding:8px;border-bottom:1px solid var(--line)}}
+.pend{display:grid;grid-template-columns:72px minmax(0,1fr);gap:12px;padding:14px 0;border-bottom:1px solid var(--line);color:var(--ink);font-size:14px}
+.pend .thumb{width:72px;aspect-ratio:4/5}
+.pphotos{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.pphotos a{width:48px;aspect-ratio:1;border-radius:6px;overflow:hidden;border:1px solid var(--line);display:block}
+.pphotos img{width:100%;height:100%;object-fit:cover;display:block}
+.pacts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.pacts input{flex:1 1 180px;min-width:0;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--bg);font-size:16px}
+.mini.ok{color:var(--ok);border-color:var(--ok);font-weight:600}
+.selrow{display:flex;gap:8px 12px;flex-wrap:wrap;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line);color:var(--ink);font-size:14px}
+.selrow .who{min-width:0;flex:1 1 220px;overflow-wrap:anywhere}
+.pill.wait{color:var(--c2)} .pill.bad{color:var(--sale)}
 .pubbar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -4px 16px rgba(0,0,0,.14);padding-bottom:env(safe-area-inset-bottom,0px)}
 .pubbar .wrap{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-block:12px;flex-wrap:wrap}
 #pubCount{font-weight:600}
@@ -169,7 +180,7 @@ body.haspub .toast{bottom:calc(120px + env(safe-area-inset-bottom,0px))}
   <div class="stats">
     <div class="stat"><small>Prodotti</small><b id="s-tot">0</b></div>
     <div class="stat"><small>In vetrina</small><b id="s-act">0</b></div>
-    <div class="stat"><small>Senza foto</small><b id="s-nophoto">0</b></div>
+    <div class="stat"><small>Da approvare</small><b id="s-pend">–</b></div>
     <div class="stat"><small>Visite oggi</small><b id="s-vis">–</b></div>
   </div>
 
@@ -212,6 +223,19 @@ body.haspub .toast{bottom:calc(120px + env(safe-area-inset-bottom,0px))}
       <thead><tr><th></th><th>Prodotto</th><th>Reparto</th><th class="num">Prezzo</th><th>Stato</th><th></th></tr></thead>
       <tbody id="atable"></tbody>
     </table></div>
+  </section>
+
+  <section class="panel" id="selPanel">
+    <div class="row between"><h2>Venditori</h2><button class="mini" id="selReload">Aggiorna</button></div>
+    <div style="display:grid;gap:6px">
+      <span class="szhead">Capi da approvare</span>
+      <div id="pendList" class="muted">Carico…</div>
+    </div>
+    <div style="display:grid;gap:6px">
+      <span class="szhead">Venditori registrati</span>
+      <div id="selList" class="muted">Carico…</div>
+    </div>
+    <p class="muted" style="margin:0">Chi vuole vendere si registra qui: <strong style="user-select:all" id="selLink"></strong>. I capi dei venditori vanno online solo dopo la tua approvazione, e gli ordini arrivano al loro WhatsApp.</p>
   </section>
 
   <section class="panel" id="visPanel">
@@ -273,7 +297,7 @@ body.haspub .toast{bottom:calc(120px + env(safe-area-inset-bottom,0px))}
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const eur=new Intl.NumberFormat("it-IT",{style:"currency",currency:"EUR"});
-const slug=t=>{let x=String(t||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")||"x";return /^[0-9]/.test(x)?"r-"+x:x};
+const slug=t=>{let x=String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")||"x";return /^[0-9]/.test(x)?"r-"+x:x};
 let token=null;try{token=sessionStorage.getItem("revesti-token")}catch(e){}
 let products=[],reparti=[],shop={},sha={prodotti:null,reparti:null,negozio:null};
 let editing=null,photoList=[],removedPhotos=[];
@@ -330,7 +354,7 @@ async function enter(){
       }}catch(_){}
     fillSettings();renderAll();renderBar();if(isDirty())publish();
     try{localStorage.setItem("revesti-owner","1")}catch(_){}
-    loadStats();
+    loadStats();loadSellers();
   }catch(err){if(token)toast(err.message)}
   finally{busy("")}
 }
@@ -340,7 +364,7 @@ function renderAll(){
   $("catcss").textContent=reparti.map((r,i)=>`.cat-${slug(r.nome)}{color:var(--c${i%6})}`).join("\n");
   $("s-tot").textContent=products.length;
   $("s-act").textContent=products.filter(p=>p.attivo!==false).length;
-  $("s-nophoto").textContent=products.filter(p=>!p.foto).length;
+  
   
   const sel=$("f-cat"),cur=sel.value;sel.innerHTML=reparti.map(r=>`<option>${esc(r.nome)}</option>`).join("");if(reparti.some(r=>r.nome===cur))sel.value=cur;
   renderTable();renderDepts();
@@ -359,6 +383,46 @@ function renderTable(){
     :`<tr><td colspan="6" class="muted" style="padding:20px;text-align:center">${products.length?"Nessun prodotto corrisponde al filtro.":"Nessun prodotto ancora. Premi «+ Aggiungi prodotto» per inserire il primo."}</td></tr>`;
 }
 $("aq").oninput=renderTable;
+
+/* venditori */
+let sellers=[],rejecting=null,confirmSel=null;
+async function loadSellers(){
+  try{const d=await api("sellers");sellers=d.venditori||[];renderSellers()}
+  catch(err){$("pendList").textContent=err.message;$("selList").textContent="";$("s-pend").textContent="–"}
+}
+function renderSellers(){
+  $("selLink").textContent=location.origin+"/vendi/";
+  const pend=sellers.flatMap(v=>v.prodotti.filter(p=>p.stato==="attesa").map(p=>({v,p})));
+  $("s-pend").textContent=pend.length;
+  $("pendList").innerHTML=pend.length?pend.map(({v,p})=>{const ph=[p.foto,...(p.altre_foto||[])].filter(Boolean);const key=v.id+"|"+p.id;return `<div class="pend">
+    <div class="thumb">${ph[0]?`<img src="${esc(ph[0])}" alt="">`:esc((p.nome||"?")[0].toUpperCase())}</div>
+    <div style="min-width:0"><div style="font-weight:600">${esc(p.nome)}</div>
+      <div class="muted">${esc(p.reparto)} · ${eur.format(p.prezzo||0)}${p.prezzo_pieno?` (pieno ${eur.format(p.prezzo_pieno)})`:""}${(p.taglie||[]).length?" · "+esc(p.taglie.join(", ")):""}</div>
+      <div class="muted">di ${esc(v.nome)} · ${esc(v.email)}${p.pubblicato?" · modifica di un capo già online":""}</div>
+      ${p.descrizione?`<div style="margin-top:6px;white-space:pre-line">${esc(p.descrizione)}</div>`:""}
+      ${ph.length?`<div class="pphotos">${ph.map(x=>`<a href="${esc(x)}" target="_blank" rel="noopener"><img src="${esc(x)}" alt="Apri la foto"></a>`).join("")}</div>`:`<div class="muted" style="margin-top:6px">Nessuna foto.</div>`}
+      <div class="pacts">${rejecting===key?`<input id="rej-reason" maxlength="300" placeholder="Motivo (facoltativo), lo riceve il venditore"><button class="mini danger" data-reject="${esc(key)}">Conferma rifiuto</button><button class="mini" data-cancelrej>Annulla</button>`
+        :`<button class="mini ok" data-approve="${esc(key)}">Approva</button><button class="mini danger" data-askrej="${esc(key)}">Rifiuta</button>`}</div>
+    </div></div>`}).join(""):"Nessun capo in attesa.";
+  $("selList").innerHTML=sellers.length?sellers.map(v=>{const on=v.prodotti.filter(p=>p.pubblicato&&!p.nascosto).length;
+    const st=!v.verificato?["wait","Email non confermata"]:v.stato==="sospeso"?["bad","Sospeso"]:["on","Attivo"];
+    return `<div class="selrow"><div class="who"><strong>${esc(v.nome)}</strong> <span class="pill ${st[0]}">${st[1]}</span>
+      <div class="muted">${esc(v.email)} · WhatsApp +${esc(v.whatsapp)} · ${plural(v.prodotti.length,"capo","capi")}, ${on} online</div></div>
+      <div class="row"><button class="mini" data-sus="${esc(v.id)}">${v.stato==="sospeso"?"Riattiva":"Sospendi"}</button><button class="mini danger" data-seldel="${esc(v.id)}">${confirmSel===v.id?"Conferma: elimina tutto":"Elimina"}</button></div></div>`}).join(""):"Ancora nessun venditore registrato.";
+}
+async function sellerAct(msg,action,payload,done){busy(msg);try{await api(action,payload);await loadSellers();toast(done)}catch(err){toast(err.message)}finally{busy("")}}
+$("selPanel").addEventListener("click",e=>{
+  const q=k=>e.target.closest(`[data-${k}]`);let b;
+  if(b=q("approve")){const [venditore,id]=b.dataset.approve.split("|");sellerAct("Approvo…","review",{venditore,id,approva:true},"Capo approvato: è online")}
+  else if(b=q("askrej")){rejecting=b.dataset.askrej;renderSellers();$("rej-reason")&&$("rej-reason").focus()}
+  else if(q("cancelrej")){rejecting=null;renderSellers()}
+  else if(b=q("reject")){const [venditore,id]=b.dataset.reject.split("|");const motivo=$("rej-reason").value;rejecting=null;sellerAct("Rifiuto…","review",{venditore,id,approva:false,motivo},"Capo rifiutato: il venditore riceve un'email")}
+  else if(b=q("sus")){const v=sellers.find(x=>x.id===b.dataset.sus);sellerAct("Aggiorno…","sellerStatus",{id:v.id,stato:v.stato==="sospeso"?"attivo":"sospeso"},v.stato==="sospeso"?"Venditore riattivato":"Venditore sospeso: i suoi capi non sono più visibili")}
+  else if(b=q("seldel")){const id=b.dataset.seldel;
+    if(confirmSel!==id){confirmSel=id;renderSellers();setTimeout(()=>{if(confirmSel===id){confirmSel=null;renderSellers()}},4000);return}
+    confirmSel=null;sellerAct("Elimino…","sellerDelete",{id},"Venditore eliminato con tutti i suoi capi")}
+});
+$("selReload").onclick=loadSellers;
 
 /* visite */
 let statDays=[];

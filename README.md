@@ -50,6 +50,39 @@ Vai su `https://<tuo-sito>.netlify.app/admin` e inserisci la password. La sessio
 
 Ogni modifica viene pubblicata automaticamente dopo un paio di secondi e il sito si aggiorna in circa un minuto. Se la pubblicazione non riesce, in basso compare una barra con **Riprova**: le modifiche restano salvate nel browser finché non vanno online.
 
+## Venditori (mercatino)
+
+Altre persone possono vendere su ReVesti registrandosi su `/vendi/` con email, nome, numero WhatsApp e password.
+
+- La registrazione si conferma con un **codice a 6 cifre inviato per email**; lo stesso sistema serve per la password dimenticata.
+- Ogni venditore ha un pannello con i propri capi e le proprie foto.
+- **Ogni capo va online solo dopo l'approvazione** nel pannello `/admin`, sezione **Venditori**. Da lì si può anche rifiutare (con motivo), sospendere o eliminare un venditore.
+- Gli ordini dei capi di un venditore arrivano **al WhatsApp del venditore**; il carrello prepara un messaggio per ciascun venditore.
+- Account, capi e foto dei venditori stanno in Netlify Blobs, non nel repository.
+
+### Configurare l'invio delle email (una volta sola)
+1. Crea un account gratuito su [brevo.com](https://www.brevo.com) (300 email al giorno).
+2. In **Senders, Domains & Dedicated IPs → Senders** aggiungi il tuo indirizzo email come mittente e confermalo dal link che ricevi.
+3. In **SMTP & API → API keys** genera una chiave.
+4. Su Netlify, in **Environment variables**, aggiungi:
+
+| Nome | Valore |
+|---|---|
+| `BREVO_API_KEY` | la chiave del passo 3 |
+| `MAIL_FROM` | l'indirizzo email confermato al passo 2 |
+
+5. **Deploys → Trigger deploy → Deploy project.**
+
+Finché queste due variabili mancano, chi prova a registrarsi vede il messaggio «L'invio delle email non è ancora configurato».
+
+| File | Contenuto |
+|---|---|
+| `vendi/index.html` | area venditori |
+| `privacy/index.html` | informativa privacy e regolamento venditori (bozza da far controllare) |
+| `netlify/functions/seller.mjs` | registrazione, accesso, capi e foto dei venditori |
+| `netlify/functions/catalogo.mjs`, `foto.mjs` | capi approvati e foto, letti dal sito |
+| `netlify/lib/sellers.mjs` | regole di account, approvazione e catalogo |
+
 ## Note
 - Per cambiare password modifica `ADMIN_PASSWORD` su Netlify e ripubblica: le sessioni aperte vengono chiuse.
 - Quando il token GitHub scade, generane uno nuovo e aggiorna `GITHUB_TOKEN`.

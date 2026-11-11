@@ -6,6 +6,9 @@
 //   GITHUB_BRANCH   facoltativa, default "main"
 import crypto from "node:crypto";
 import { readStats } from "../lib/stats.mjs";
+import { Err, listSellers, setSellerStatus, deleteSeller, review } from "../lib/sellers.mjs";
+
+const SELLER_ADMIN = { sellers: listSellers, sellerStatus: setSellerStatus, sellerDelete: deleteSeller, review };
 
 const env = k => (globalThis.Netlify?.env?.get?.(k) ?? process.env[k] ?? "");
 const DATA_FILES = { prodotti: "data/prodotti.json", reparti: "data/reparti.json", negozio: "data/negozio.json" };
@@ -100,6 +103,17 @@ export default async (req) => {
 
   if (!validToken(body.token, password)) return fail(401, "Sessione scaduta: accedi di nuovo");
 
+  if (SELLER_ADMIN[action]) {
+    try {
+      const { sellerCtx } = await import("../lib/ctx.mjs");
+      return json(await SELLER_ADMIN[action](sellerCtx(), body));
+    } catch (e) {
+      if (e instanceof Err) return fail(e.status, e.message);
+      console.error("venditori", action, e);
+      return fail(500, "Venditori non disponibili: " + (e?.message || "errore"));
+    }
+  }
+
   if (action === "stats") {
     try {
       const { getStore } = await import("@netlify/blobs");
@@ -134,7 +148,7 @@ export default async (req) => {
     if (action === "upload") {
       const b64 = String(body.base64 || "");
       if (!b64 || b64.length > 5_500_000) return fail(400, "Foto mancante o troppo grande");
-      const base = String(body.name || "foto").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "foto";
+      const base = String(body.name || "foto").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "foto";
       const path = `images/uploads/${Date.now()}-${crypto.randomBytes(3).toString("hex")}-${base}.jpg`;
       await gh.write(path, b64, `Carica foto ${base}` + SKIP);
       return json({ path: "/" + path });
