@@ -1,5 +1,20 @@
 [
   {
+    "id": "dior-b22",
+    "nome": "Dior B22",
+    "reparto": "Scarpe Uomo",
+    "prezzo": 35,
+    "prezzo_pieno": null,
+    "taglie": [
+      "43"
+    ],
+    "foto": "",
+    "altre_foto": [],
+    "descrizione": "Scarpe tenute bene",
+    "attivo": true,
+    "data": "2026-11-11T15:50:31.106Z"
+  },
+  {
     "id": "borsellino-gucci",
     "nome": "Borsellino gucci",
     "reparto": "Borselli uomo",
