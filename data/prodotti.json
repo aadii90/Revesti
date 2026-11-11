@@ -1,5 +1,22 @@
 [
   {
+    "id": "jeans",
+    "nome": "Jeans",
+    "reparto": "Jeans ragazzi",
+    "prezzo": 30,
+    "prezzo_pieno": null,
+    "taglie": [
+      "L"
+    ],
+    "foto": "/images/uploads/1794404220869-3e6a84-jeans.jpg",
+    "altre_foto": [
+      "/images/uploads/1794404222928-4ab7b5-jeans.jpg"
+    ],
+    "descrizione": "Suply e demand\nJunior",
+    "attivo": true,
+    "data": "2026-11-11T13:37:04.774Z"
+  },
+  {
     "id": "nike-tn",
     "nome": "Nike tn",
     "reparto": "Scarpe Uomo",
