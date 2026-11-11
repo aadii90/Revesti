@@ -3,7 +3,7 @@
 Negozio online di abbigliamento usato: *Dai una seconda vita ai vestiti*.
 
 - **Vetrina** (`index.html`): reparti, filtri, ricerca, schede prodotto con taglie e foto, carrello. L'ordine si invia su WhatsApp o per email.
-- **Gestione** (`/admin`): pannello protetto da password per aggiungere e modificare prodotti, foto, reparti e dati del negozio. Ogni salvataggio diventa un commit su GitHub e Netlify aggiorna il sito da solo.
+- **Gestione** (`/admin`): pannello protetto da password per aggiungere e modificare prodotti, foto, reparti e dati del negozio. Ogni modifica diventa un commit su GitHub e Netlify aggiorna il sito da solo.
 
 ## Struttura
 
@@ -47,7 +47,7 @@ Vai su `https://<tuo-sito>.netlify.app/admin` e inserisci la password. La sessio
 - **Reparti**: aggiungi, rinomina, riordina, elimina (solo se vuoti).
 - **Dati del negozio**: nome, titolo, WhatsApp, email.
 
-Dopo ogni salvataggio il sito pubblico si aggiorna in circa un minuto.
+Ogni modifica viene pubblicata automaticamente dopo un paio di secondi e il sito si aggiorna in circa un minuto. Se la pubblicazione non riesce, in basso compare una barra con **Riprova**: le modifiche restano salvate nel browser finché non vanno online.
 
 ## Note
 - Per cambiare password modifica `ADMIN_PASSWORD` su Netlify e ripubblica: le sessioni aperte vengono chiuse.

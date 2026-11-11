@@ -119,6 +119,14 @@ td{padding:8px;border-bottom:1px solid var(--line);vertical-align:middle}
   .pcell,.addph{width:calc((100% - 20px)/3)}
   .login form{padding:22px}
 }
+.pubbar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -4px 16px rgba(0,0,0,.14);padding-bottom:env(safe-area-inset-bottom,0px)}
+.pubbar .wrap{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-block:12px;flex-wrap:wrap}
+#pubCount{font-weight:600}
+.pubbar .dotp{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--accent);margin-right:8px}
+.pubbar.err .dotp{background:var(--sale)}
+body.haspub main.dash{padding-bottom:150px}
+body.haspub .toast{bottom:calc(120px + env(safe-area-inset-bottom,0px))}
+@media (max-width:640px){.pubbar .row{width:100%}.pubbar .row .btn{flex:1}}
 </style>
 <style id="catcss"></style>
 </head>
@@ -200,8 +208,13 @@ td{padding:8px;border-bottom:1px solid var(--line);vertical-align:middle}
       <div class="full"><button class="btn" type="submit">Salva dati</button></div>
     </form>
   </section>
-  <p class="muted">Dopo ogni salvataggio il sito pubblico si aggiorna in circa un minuto.</p>
+  <p class="muted">Ogni modifica viene pubblicata automaticamente: il sito si aggiorna in circa un minuto.</p>
 </main>
+
+<div class="pubbar" id="pubbar" hidden><div class="wrap">
+  <span><span class="dotp"></span><span id="pubCount"></span></span>
+  <div class="row" id="pubActions" hidden><button class="btn ghost" id="discardBtn">Annulla modifiche</button><button class="btn" id="pubBtn">Riprova</button></div>
+</div></div>
 
 <div class="busy" id="busy" hidden><div id="busyMsg">Salvo…</div></div>
 <div class="toast" id="toast" hidden></div>
@@ -214,6 +227,16 @@ const slug=t=>{let x=String(t||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLow
 let token=null;try{token=sessionStorage.getItem("revesti-token")}catch(e){}
 let products=[],reparti=[],shop={},sha={prodotti:null,reparti:null,negozio:null};
 let editing=null,photoList=[],removedPhotos=[];
+let dirty={prodotti:false,reparti:false,negozio:false},changes=0,pendingDeletes=[];
+const DRAFT="revesti-draft",RAW="https://raw.githubusercontent.com/aadii90/revesti/main";
+const FB=`onerror="if(!this.dataset.f){this.dataset.f=1;this.src='${RAW}'+this.getAttribute('data-p')}else{this.remove()}"`;
+const isDirty=()=>dirty.prodotti||dirty.reparti||dirty.negozio;
+function storeDraft(){try{if(isDirty())localStorage.setItem(DRAFT,JSON.stringify({products,reparti,shop,dirty,changes,pendingDeletes,sha}));else localStorage.removeItem(DRAFT)}catch(_){}}
+let pubTimer=null,publishing=false,pubError="";
+function mark(file){dirty[file]=true;changes++;pubError="";storeDraft();renderBar();clearTimeout(pubTimer);pubTimer=setTimeout(publish,1200)}
+function resetDirty(){dirty={prodotti:false,reparti:false,negozio:false};changes=0;pendingDeletes=[]}
+function renderBar(){const on=(isDirty()||publishing)&&!$("dash").hidden;$("pubbar").hidden=!on;document.body.classList.toggle("haspub",on);
+  $("pubCount").textContent=pubError?"Non pubblicato: "+pubError:"Pubblicazione sul sito in corso…";$("pubActions").hidden=!pubError;$("pubbar").classList.toggle("err",!!pubError)}
 
 function toast(t){const el=$("toast");el.textContent=t;el.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>el.hidden=true,3200)}
 function busy(msg){$("busyMsg").textContent=msg||"";$("busy").hidden=!msg}
@@ -225,8 +248,8 @@ async function api(action,payload={}){
   if(!r.ok)throw new Error(d.error||"Errore "+r.status);
   return d;
 }
-async function save(file,data,message){
-  const d=await api("save",{file,data,sha:sha[file],message});sha[file]=d.sha;
+async function save(file,data,message,skipDeploy){
+  const d=await api("save",{file,data,sha:sha[file],message,skipDeploy});sha[file]=d.sha;
 }
 
 /* login */
@@ -237,7 +260,7 @@ $("loginForm").onsubmit=async e=>{
   catch(err){$("loginErr").textContent=err.message}
   finally{$("loginBtn").disabled=false}
 };
-function logout(){token=null;try{sessionStorage.removeItem("revesti-token")}catch(_){}$("dash").hidden=true;$("logout").hidden=true;$("loginView").hidden=false}
+function logout(){token=null;try{sessionStorage.removeItem("revesti-token")}catch(_){}$("dash").hidden=true;$("logout").hidden=true;$("loginView").hidden=false;renderBar()}
 $("logout").onclick=logout;
 async function enter(){
   busy("Carico il catalogo…");
@@ -247,7 +270,15 @@ async function enter(){
     reparti=(d.reparti.data&&Array.isArray(d.reparti.data.reparti))?d.reparti.data.reparti:[];sha.reparti=d.reparti.sha;
     shop=d.negozio.data||{};sha.negozio=d.negozio.sha;
     $("loginView").hidden=true;$("dash").hidden=false;$("logout").hidden=false;
-    fillSettings();renderAll();
+    resetDirty();pubError="";
+    try{const dr=JSON.parse(localStorage.getItem(DRAFT)||"null");
+      if(dr&&dr.dirty){
+        if(["prodotti","reparti","negozio"].every(k=>!dr.dirty[k]||dr.sha[k]===sha[k])){
+          if(dr.dirty.prodotti)products=dr.products;if(dr.dirty.reparti)reparti=dr.reparti;if(dr.dirty.negozio)shop=dr.shop;
+          dirty=dr.dirty;changes=dr.changes||1;pendingDeletes=dr.pendingDeletes||[]}
+        else{localStorage.removeItem(DRAFT);toast("Le modifiche non pubblicate sono state scartate: il catalogo è cambiato nel frattempo")}
+      }}catch(_){}
+    fillSettings();renderAll();renderBar();if(isDirty())publish();
   }catch(err){if(token)toast(err.message)}
   finally{busy("")}
 }
@@ -262,7 +293,7 @@ function renderAll(){
   const sel=$("f-cat"),cur=sel.value;sel.innerHTML=reparti.map(r=>`<option>${esc(r.nome)}</option>`).join("");if(reparti.some(r=>r.nome===cur))sel.value=cur;
   renderTable();renderDepts();
 }
-function thumb(p){return p.foto?`<img src="${esc(p.foto)}" alt="" onerror="this.remove()">`:esc((p.nome||"?")[0].toUpperCase())}
+function thumb(p){return p.foto?`<img src="${esc(p.foto)}" data-p="${esc(p.foto)}" alt="" ${FB}>`:esc((p.nome||"?")[0].toUpperCase())}
 function renderTable(){
   const q=$("aq").value.toLowerCase();
   const list=products.filter(p=>!q||(p.nome||"").toLowerCase().includes(q));
@@ -279,7 +310,7 @@ $("aq").oninput=renderTable;
 
 /* form prodotto */
 function renderPhotos(){
-  $("photos").innerHTML=photoList.map((ph,i)=>`<div class="pcell"><div class="ph"><img src="${esc(ph.preview||ph.path)}" alt="">${i===0?`<span class="main">Principale</span>`:""}</div>
+  $("photos").innerHTML=photoList.map((ph,i)=>`<div class="pcell"><div class="ph"><img src="${esc(ph.preview||ph.path)}" ${ph.preview?"":`data-p="${esc(ph.path)}" ${FB}`} alt="">${i===0?`<span class="main">Principale</span>`:""}</div>
     <div class="acts">${i>0?`<button type="button" class="mini" data-first="${i}">Principale</button>`:""}<button type="button" class="mini danger" data-rm="${i}">Togli</button></div></div>`).join("")
     +`<label class="addph" for="f-photo">+ Aggiungi foto</label>`;
 }
@@ -313,7 +344,6 @@ $("pform").onsubmit=async e=>{
       if(ph.file){busy(`Carico foto ${++n} di ${newCount}…`);const b64=await resize(ph.file);const d=await api("upload",{name:nome,base64:b64});ph.path=d.path;ph.file=null}
       paths.push(ph.path);
     }
-    busy("Salvo il prodotto…");
     const old=editing?products.find(p=>p.id===editing):null;
     let id=old?old.id:slug(nome).slice(0,60);if(!old){let b=id,i=2;while(products.some(p=>p.id===id))id=b+"-"+i++}
     const price=parseFloat($("f-price").value)||0,full=parseFloat($("f-old").value)||null;
@@ -321,9 +351,8 @@ $("pform").onsubmit=async e=>{
       taglie:$("f-sizes").value.split(",").map(s=>s.trim()).filter(Boolean),foto:paths[0]||"",altre_foto:paths.slice(1),
       descrizione:$("f-desc").value.trim(),attivo:$("f-active").checked,data:old&&old.data?old.data:new Date().toISOString()};
     const next=old?products.map(p=>p.id===id?item:p):[item,...products];
-    await save("prodotti",next,(old?"Modifica":"Nuovo")+" prodotto: "+nome);products=next;
-    for(const p of removedPhotos){try{await api("deleteImage",{path:p})}catch(_){}}
-    closeForm();renderAll();toast(old?"Prodotto aggiornato":"Prodotto aggiunto: online tra circa un minuto");
+    products=next;pendingDeletes.push(...removedPhotos);mark("prodotti");
+    closeForm();renderAll();toast((old?"Prodotto aggiornato":"Prodotto aggiunto"));
   }catch(err){$("formErr").textContent=err.message}
   finally{busy("")}
 };
@@ -334,15 +363,12 @@ $("atable").onclick=async e=>{
   const ed=e.target.closest("[data-edit]"),dl=e.target.closest("[data-del]"),tg=e.target.closest("[data-toggle]");
   if(ed)openForm(products.find(p=>p.id===ed.dataset.edit));
   if(tg){const id=tg.dataset.toggle;const next=products.map(p=>p.id===id?{...p,attivo:p.attivo===false}:p);
-    busy("Salvo…");try{await save("prodotti",next,"Cambia stato prodotto");products=next;renderAll()}catch(err){toast(err.message)}finally{busy("")}}
+    products=next;mark("prodotti");renderAll()}
   if(dl){const id=dl.dataset.del;
     if(confirmDel!==id){confirmDel=id;dl.textContent="Conferma";setTimeout(()=>{if(confirmDel===id){confirmDel=null;renderTable()}},4000);return}
     confirmDel=null;const p=products.find(x=>x.id===id);const next=products.filter(x=>x.id!==id);
-    busy("Elimino…");
-    try{await save("prodotti",next,"Elimina prodotto: "+p.nome);products=next;
-      for(const ph of [p.foto,...(p.altre_foto||[])].filter(Boolean)){try{await api("deleteImage",{path:ph})}catch(_){}}
-      if(editing===id)closeForm();renderAll();toast("Prodotto eliminato")}
-    catch(err){toast(err.message)}finally{busy("")}}
+    products=next;pendingDeletes.push(...[p.foto,...(p.altre_foto||[])].filter(Boolean));mark("prodotti");
+    if(editing===id)closeForm();renderAll();toast("Prodotto eliminato")}
 };
 
 /* reparti */
@@ -355,12 +381,9 @@ function renderDepts(){
     <button class="mini" data-down="${i}" ${i===reparti.length-1?"disabled":""} aria-label="Sposta giù">↓</button>
     <button class="mini danger" data-ddel="${i}" ${n?`disabled title="Sposta o elimina prima i prodotti di questo reparto"`:""}>${confirmDept===i?"Conferma":"Elimina"}</button></div>`}).join("")||`<p class="muted">Nessun reparto. Aggiungine uno qui sotto.</p>`;
 }
-async function saveReparti(next,msg,alsoProducts){
-  busy("Salvo i reparti…");
-  try{await save("reparti",{reparti:next},msg);reparti=next;
-    if(alsoProducts){await save("prodotti",alsoProducts,"Aggiorna reparto nei prodotti");products=alsoProducts}
-    renderAll();toast(msg)}
-  catch(err){toast(err.message);renderDepts()}finally{busy("")}
+function saveReparti(next,msg,alsoProducts){
+  reparti=next;if(alsoProducts){products=alsoProducts;dirty.prodotti=true}
+  mark("reparti");renderAll();toast(msg);
 }
 $("dform").onsubmit=e=>{e.preventDefault();const t=$("d-name").value.trim();if(!t)return;
   if(reparti.some(r=>r.nome.toLowerCase()===t.toLowerCase())){toast("Esiste già un reparto con questo nome");return}
@@ -381,9 +404,33 @@ $("deptList").addEventListener("click",e=>{
 
 /* dati negozio */
 function fillSettings(){$("s-name").value=shop.nome||"";$("s-tagline").value=shop.titolo||"";$("s-sub").value=shop.sottotitolo||"";$("s-wa").value=shop.whatsapp||"";$("s-email").value=shop.email||""}
-$("sform").onsubmit=async e=>{e.preventDefault();
+$("sform").onsubmit=e=>{e.preventDefault();
   const next={nome:$("s-name").value.trim(),titolo:$("s-tagline").value.trim(),sottotitolo:$("s-sub").value.trim(),whatsapp:$("s-wa").value.replace(/\D/g,""),email:$("s-email").value.trim()};
-  busy("Salvo…");try{await save("negozio",next,"Aggiorna dati negozio");shop=next;toast("Dati salvati")}catch(err){toast(err.message)}finally{busy("")}};
+  shop=next;mark("negozio");toast("Dati salvati")};
+
+/* pubblicazione */
+async function publish(){
+  clearTimeout(pubTimer);if(publishing||!isDirty()||!token)return;
+  publishing=true;pubError="";renderBar();
+  try{
+    const files=["reparti","negozio","prodotti"].filter(k=>dirty[k]);
+    for(let i=0;i<files.length;i++){const k=files[i];const data=k==="reparti"?{reparti}:k==="negozio"?shop:products;
+      dirty[k]=false;
+      try{await save(k,data,"Pubblica "+k,i<files.length-1)}catch(e){dirty[k]=true;throw e}
+      storeDraft()}
+    if(!isDirty()){const del=pendingDeletes;pendingDeletes=[];changes=0;storeDraft();
+      for(const ph of del){try{await api("deleteImage",{path:ph})}catch(_){}}
+      toast("Pubblicato: il sito si aggiorna in circa un minuto")}
+  }catch(err){pubError=err.message;storeDraft()}
+  finally{publishing=false;renderBar();if(isDirty()&&!pubError)pubTimer=setTimeout(publish,300)}
+}
+$("pubBtn").onclick=()=>{pubError="";publish()};
+let confirmDiscard=false;
+$("discardBtn").onclick=async()=>{const b=$("discardBtn");
+  if(!confirmDiscard){confirmDiscard=true;b.textContent="Conferma: annulla tutto";setTimeout(()=>{confirmDiscard=false;b.textContent="Annulla modifiche"},4000);return}
+  confirmDiscard=false;b.textContent="Annulla modifiche";clearTimeout(pubTimer);try{localStorage.removeItem(DRAFT)}catch(_){}
+  closeForm();await enter();toast("Modifiche annullate");
+};
 
 if(token)enter();
 </script>

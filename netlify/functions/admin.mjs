@@ -9,6 +9,8 @@ import crypto from "node:crypto";
 const env = k => (globalThis.Netlify?.env?.get?.(k) ?? process.env[k] ?? "");
 const DATA_FILES = { prodotti: "data/prodotti.json", reparti: "data/reparti.json", negozio: "data/negozio.json" };
 const SESSION_MS = 12 * 60 * 60 * 1000;
+// Netlify non ripubblica il sito per i commit che contengono questa sigla.
+const SKIP = " [skip netlify]";
 
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
@@ -115,7 +117,7 @@ export default async (req) => {
       if (!path) return fail(400, "File non valido");
       if (body.data === undefined || body.data === null || typeof body.data !== "object") return fail(400, "Dati mancanti");
       const text = JSON.stringify(body.data, null, 2) + "\n";
-      const sha = await gh.write(path, Buffer.from(text).toString("base64"), String(body.message || `Aggiorna ${body.file}`).slice(0, 120), body.sha || undefined);
+      const sha = await gh.write(path, Buffer.from(text).toString("base64"), String(body.message || `Aggiorna ${body.file}`).slice(0, 120) + (body.skipDeploy ? SKIP : ""), body.sha || undefined);
       return json({ sha });
     }
 
@@ -124,14 +126,14 @@ export default async (req) => {
       if (!b64 || b64.length > 5_500_000) return fail(400, "Foto mancante o troppo grande");
       const base = String(body.name || "foto").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "foto";
       const path = `images/uploads/${Date.now()}-${crypto.randomBytes(3).toString("hex")}-${base}.jpg`;
-      await gh.write(path, b64, `Carica foto ${base}`);
+      await gh.write(path, b64, `Carica foto ${base}` + SKIP);
       return json({ path: "/" + path });
     }
 
     if (action === "deleteImage") {
       const p = String(body.path || "").replace(/^\/+/, "");
       if (!/^images\/uploads\/[A-Za-z0-9._-]+$/.test(p)) return fail(400, "Percorso foto non valido");
-      await gh.remove(p, `Elimina foto ${p.split("/").pop()}`);
+      await gh.remove(p, `Elimina foto ${p.split("/").pop()}` + SKIP);
       return json({ ok: true });
     }
 
