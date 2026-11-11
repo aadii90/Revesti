@@ -1,17 +1,1 @@
-[
-  {
-    "id": "esempio-tuta-in-cotone",
-    "nome": "Esempio – Tuta in cotone",
-    "reparto": "Bambini",
-    "prezzo": 8.5,
-    "taglie": [
-      "4A",
-      "6A"
-    ],
-    "foto": "",
-    "altre_foto": [],
-    "descrizione": "Prodotto di esempio: modificalo o eliminalo dal pannello di gestione.",
-    "attivo": true,
-    "data": "2026-11-11T00:01:00.000Z"
-  }
-]
+[]
