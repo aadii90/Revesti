@@ -1,1 +1,18 @@
-[]
+[
+  {
+    "id": "nike-tn",
+    "nome": "Nike tn",
+    "reparto": "Scarpe Uomo",
+    "prezzo": 45,
+    "prezzo_pieno": null,
+    "taglie": [
+      "42",
+      "5"
+    ],
+    "foto": "/images/uploads/1794357508307-0666e9-nike-tn.jpg",
+    "altre_foto": [],
+    "descrizione": "",
+    "attivo": true,
+    "data": "2026-11-11T00:38:30.082Z"
+  }
+]
