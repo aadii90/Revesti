@@ -1,5 +1,20 @@
 [
   {
+    "id": "cintura-gg",
+    "nome": "Cintura GG",
+    "reparto": "Accesori uomo",
+    "prezzo": 15,
+    "prezzo_pieno": null,
+    "taglie": [],
+    "foto": "/images/uploads/1794424805358-8f5904-cintura-gg.jpg",
+    "altre_foto": [
+      "/images/uploads/1794424808436-21cd2f-cintura-gg.jpg"
+    ],
+    "descrizione": "Cintura Gucci bianca",
+    "attivo": true,
+    "data": "2026-11-11T19:20:10.370Z"
+  },
+  {
     "id": "cintura-lv",
     "nome": "Cintura LV",
     "reparto": "Accesori uomo",
