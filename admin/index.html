@@ -173,7 +173,8 @@ body.haspub .toast{bottom:calc(120px + env(safe-area-inset-bottom,0px))}
         <span style="font-size:13px;font-weight:600">Taglie disponibili <span class="hint">tocca quelle che hai, da una colonna o dall'altra</span></span>
         <div class="szcols">
           <div class="szcol"><span class="szhead">Vestiti (lettere)</span><div class="szgrid" id="sz-let"></div></div>
-          <div class="szcol"><span class="szhead">Scarpe (numeri)</span><div class="szgrid" id="sz-num"></div></div>
+          <div class="szcol"><span class="szhead">Scarpe (numeri)</span><div class="szgrid" id="sz-num"></div>
+            <label class="check" style="font-weight:500;font-size:13px"><input type="checkbox" id="sz-half"> Mostra anche le mezze taglie (es. 42,5)</label></div>
         </div>
         <label class="f">Altre taglie <span class="hint">facoltativo, separate da virgola: es. 4A, 6A, Taglia unica</span><input id="f-sizes" placeholder="4A, 6A"></label>
       </div>
@@ -324,13 +325,16 @@ $("aq").oninput=renderTable;
 
 /* taglie */
 const LETTERS=["S","M","L","XL","XXL","XXXL"],NUMS=Array.from({length:21},(_,i)=>String(25+i));
-let selSizes=new Set();
+const ALLNUM=NUMS.flatMap((n,i)=>i<NUMS.length-1?[n,n+",5"]:[n]);
+let selSizes=new Set(),showHalf=false;
 function renderSizes(){
   const chip=t=>`<button type="button" class="sz" data-sz="${t}" aria-pressed="${selSizes.has(t)}">${t}</button>`;
-  $("sz-let").innerHTML=LETTERS.map(chip).join("");$("sz-num").innerHTML=NUMS.map(chip).join("");
+  $("sz-let").innerHTML=LETTERS.map(chip).join("");$("sz-num").innerHTML=(showHalf?ALLNUM:NUMS).map(chip).join("");$("sz-half").checked=showHalf;
 }
 document.querySelector(".szcols").onclick=e=>{const b=e.target.closest(".sz");if(!b)return;const t=b.dataset.sz;
   selSizes.has(t)?selSizes.delete(t):selSizes.add(t);b.setAttribute("aria-pressed",selSizes.has(t))};
+
+$("sz-half").onchange=e=>{showHalf=e.target.checked;if(!showHalf)for(const t of [...selSizes])if(t.includes(","))selSizes.delete(t);renderSizes()};
 
 /* form prodotto */
 function renderPhotos(){
@@ -349,8 +353,8 @@ function openForm(p){
   photoList=p?[p.foto,...(p.altre_foto||[])].filter(Boolean).map(path=>({path})):[];
   $("formTitle").textContent=p?"Modifica prodotto":"Nuovo prodotto";
   $("f-name").value=p?p.nome:"";$("f-cat").value=p&&reparti.some(r=>r.nome===p.reparto)?p.reparto:(reparti[0]||{}).nome||"";
-  const tg=p?(p.taglie||[]).map(t=>String(t).trim()):[];const known=t=>LETTERS.includes(t.toUpperCase())||NUMS.includes(t);
-  selSizes=new Set(tg.filter(known).map(t=>t.toUpperCase()));$("f-sizes").value=tg.filter(t=>!known(t)).join(", ");renderSizes();$("f-price").value=p?p.prezzo:"";$("f-old").value=p&&p.prezzo_pieno?p.prezzo_pieno:"";
+  const tg=p?(p.taglie||[]).map(t=>String(t).trim().replace(/^(\d+)[.,]5$/,"$1,5")):[];const known=t=>LETTERS.includes(t.toUpperCase())||ALLNUM.includes(t);
+  selSizes=new Set(tg.filter(known).map(t=>t.toUpperCase()));$("f-sizes").value=tg.filter(t=>!known(t)).join(", ");showHalf=[...selSizes].some(t=>t.includes(","));renderSizes();$("f-price").value=p?p.prezzo:"";$("f-old").value=p&&p.prezzo_pieno?p.prezzo_pieno:"";
   $("f-desc").value=p?p.descrizione||"":"";$("f-active").checked=p?p.attivo!==false:true;$("formErr").textContent="";
   renderPhotos();$("formPanel").hidden=false;$("formPanel").scrollIntoView({behavior:"smooth",block:"start"});setTimeout(()=>$("f-name").focus(),300);
 }
@@ -373,7 +377,7 @@ $("pform").onsubmit=async e=>{
     let id=old?old.id:slug(nome).slice(0,60);if(!old){let b=id,i=2;while(products.some(p=>p.id===id))id=b+"-"+i++}
     const price=parseFloat($("f-price").value)||0,full=parseFloat($("f-old").value)||null;
     const item={id,nome,reparto:$("f-cat").value,prezzo:price,prezzo_pieno:full&&full>price?full:null,
-      taglie:[...LETTERS.filter(t=>selSizes.has(t)),...NUMS.filter(t=>selSizes.has(t)),...$("f-sizes").value.split(",").map(s=>s.trim()).filter(t=>t&&!selSizes.has(t.toUpperCase()))],foto:paths[0]||"",altre_foto:paths.slice(1),
+      taglie:[...LETTERS.filter(t=>selSizes.has(t)),...ALLNUM.filter(t=>selSizes.has(t)),...$("f-sizes").value.split(",").map(s=>s.trim()).filter(t=>t&&!selSizes.has(t.toUpperCase().replace(/^(\d+)\.5$/,"$1,5")))],foto:paths[0]||"",altre_foto:paths.slice(1),
       descrizione:$("f-desc").value.trim(),attivo:$("f-active").checked,data:old&&old.data?old.data:new Date().toISOString()};
     const next=old?products.map(p=>p.id===id?item:p):[item,...products];
     products=next;pendingDeletes.push(...removedPhotos);mark("prodotti");
