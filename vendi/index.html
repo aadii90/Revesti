@@ -99,6 +99,11 @@ label.f input,label.f select,label.f textarea{border:1px solid var(--line);borde
   #addNew,#pform .btn,#profForm .btn{width:100%}
   #authView .steps{order:2}
 }
+.pwwrap{position:relative;display:block}
+.pwwrap input{padding-right:48px!important}
+.pwtoggle{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:40px;height:40px;border:0;background:none;display:grid;place-items:center;color:var(--muted);border-radius:8px;padding:0}
+.pwtoggle[aria-pressed="true"]{color:var(--accent)}
+.pwtoggle svg{width:22px;height:22px;display:block}
 </style>
 </head>
 <body>
@@ -351,6 +356,17 @@ $("pform").onsubmit=async e=>{
 };
 $("profForm").onsubmit=async e=>{e.preventDefault();busy("Salvo…");
   try{const d=await api("saveProfile",{nome:$("pr-nome").value,whatsapp:$("pr-wa").value});me=d.utente;$("hello").textContent="Ciao "+me.nome;$("pr-wa").value=me.whatsapp;toast("Dati salvati")}catch(err){toast(err.message)}finally{busy("")}};
+
+/* occhio per mostrare la password */
+const EYE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+const EYE_OFF='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.6 10.6 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.1M6.6 6.6C3.7 8.5 2 12 2 12s3.6 7 10 7c1.7 0 3.2-.5 4.5-1.200"/><path d="M9.900 9.900a3 3 0 0 0 4.200 4.200"/></svg>';
+document.querySelectorAll('input[type="password"]').forEach(inp=>{
+  const w=document.createElement("span");w.className="pwwrap";inp.parentNode.insertBefore(w,inp);w.appendChild(inp);
+  const b=document.createElement("button");b.type="button";b.className="pwtoggle";b.innerHTML=EYE;b.setAttribute("aria-label","Mostra la password");b.setAttribute("aria-pressed","false");
+  b.onclick=()=>{const show=inp.type==="password";inp.type=show?"text":"password";b.innerHTML=show?EYE_OFF:EYE;b.setAttribute("aria-pressed",show);b.setAttribute("aria-label",show?"Nascondi la password":"Mostra la password");inp.focus()};
+  w.appendChild(b);
+  if(inp.form)inp.form.addEventListener("submit",()=>{if(inp.type!=="password")b.click()});
+});
 
 if(location.hash==="#registrati")tab(true);
 if(token)enter();
