@@ -1,5 +1,23 @@
 [
   {
+    "id": "giacca-lacoste",
+    "nome": "Giacca Lacoste",
+    "reparto": "Uomo",
+    "prezzo": 30,
+    "prezzo_pieno": null,
+    "taglie": [
+      "M"
+    ],
+    "foto": "/images/uploads/1794425305741-808572-giacca-lacoste.jpg",
+    "altre_foto": [
+      "/images/uploads/1794425307793-4ef8b2-giacca-lacoste.jpg",
+      "/images/uploads/1794425309892-b0281a-giacca-lacoste.jpg"
+    ],
+    "descrizione": "Nuova",
+    "attivo": true,
+    "data": "2026-11-11T19:28:31.539Z"
+  },
+  {
     "id": "blazer",
     "nome": "Blazer",
     "reparto": "Donna",
