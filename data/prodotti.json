@@ -17,21 +17,6 @@
     "data": "2026-11-11T18:59:12.613Z"
   },
   {
-    "id": "cintura-tb",
-    "nome": "Cintura TB",
-    "reparto": "Cinture uomo",
-    "prezzo": 15,
-    "prezzo_pieno": null,
-    "taglie": [],
-    "foto": "/images/uploads/1794422805511-508e81-cintura-tb.jpg",
-    "altre_foto": [
-      "/images/uploads/1794422807533-6d562b-cintura-tb.jpg"
-    ],
-    "descrizione": "Cintura burberry con il logo nero",
-    "attivo": true,
-    "data": "2026-11-11T18:46:48.874Z"
-  },
-  {
     "id": "cintura-gg",
     "nome": "Cintura GG",
     "reparto": "Cinture uomo",
