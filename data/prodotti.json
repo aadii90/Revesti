@@ -4,7 +4,7 @@
     "nome": "Giacca Lacoste",
     "reparto": "Uomo",
     "prezzo": 30,
-    "prezzo_pieno": null,
+    "prezzo_pieno": 35,
     "taglie": [
       "M"
     ],
