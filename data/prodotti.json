@@ -1,5 +1,20 @@
 [
   {
+    "id": "borsellino-gucci",
+    "nome": "Borsellino gucci",
+    "reparto": "Borselli uomo",
+    "prezzo": 10,
+    "prezzo_pieno": null,
+    "taglie": [],
+    "foto": "/images/uploads/1794405095485-15f898-borsellino-gucci.jpg",
+    "altre_foto": [
+      "/images/uploads/1794405098027-ac5fa5-borsellino-gucci.jpg"
+    ],
+    "descrizione": "In ottime condizioni",
+    "attivo": true,
+    "data": "2026-11-11T13:51:39.995Z"
+  },
+  {
     "id": "jeans",
     "nome": "Jeans",
     "reparto": "Jeans ragazzi",
