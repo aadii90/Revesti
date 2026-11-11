@@ -1,5 +1,22 @@
 [
   {
+    "id": "giacca-invernale",
+    "nome": "Giacca invernale",
+    "reparto": "Donna",
+    "prezzo": 20,
+    "prezzo_pieno": null,
+    "taglie": [
+      "M"
+    ],
+    "foto": "/images/uploads/1794423548875-172a3e-giacca-invernale.jpg",
+    "altre_foto": [
+      "/images/uploads/1794423550965-c3880f-giacca-invernale.jpg"
+    ],
+    "descrizione": "Giacca molto buona",
+    "attivo": true,
+    "data": "2026-11-11T18:59:12.613Z"
+  },
+  {
     "id": "cintura-tb",
     "nome": "Cintura TB",
     "reparto": "Cinture uomo",
