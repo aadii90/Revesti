@@ -1,5 +1,22 @@
 [
   {
+    "id": "slim-fit-jeans",
+    "nome": "Slim fit jeans",
+    "reparto": "Jeans ragazzi",
+    "prezzo": 25,
+    "prezzo_pieno": null,
+    "taglie": [
+      "L"
+    ],
+    "foto": "/images/uploads/1794421058843-36bcf7-slim-fit-jeans.jpg",
+    "altre_foto": [
+      "/images/uploads/1794421061003-7ecb70-slim-fit-jeans.jpg"
+    ],
+    "descrizione": "Messi bene e poco usati",
+    "attivo": true,
+    "data": "2026-11-11T18:17:42.445Z"
+  },
+  {
     "id": "dior-b22",
     "nome": "Dior B22",
     "reparto": "Scarpe Uomo",
