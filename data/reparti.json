@@ -1,7 +1,16 @@
 {
   "reparti": [
-    { "nome": "Donna" },
-    { "nome": "Uomo" },
-    { "nome": "Bambini" }
+    {
+      "nome": "Donna"
+    },
+    {
+      "nome": "Uomo"
+    },
+    {
+      "nome": "Bambini"
+    },
+    {
+      "nome": "Scarpe Uomo"
+    }
   ]
 }
