@@ -1,5 +1,20 @@
 [
   {
+    "id": "cintura-lv",
+    "nome": "Cintura LV",
+    "reparto": "Accesori uomo",
+    "prezzo": 15,
+    "prezzo_pieno": null,
+    "taglie": [],
+    "foto": "/images/uploads/1794424271312-f1f4ce-cintura-lv.jpg",
+    "altre_foto": [
+      "/images/uploads/1794424273447-e029e8-cintura-lv.jpg"
+    ],
+    "descrizione": "Cintura Louis vuitton a scacchiera",
+    "attivo": true,
+    "data": "2026-11-11T19:11:14.824Z"
+  },
+  {
     "id": "borsetta-diesel",
     "nome": "Borsetta Diesel",
     "reparto": "Accesori donna",
