@@ -15,6 +15,7 @@ Negozio online di abbigliamento usato: *Dai una seconda vita ai vestiti*.
 | `images/uploads/` | foto caricate dal pannello (ridimensionate a 1600 px) |
 | `admin/index.html` | pannello di gestione |
 | `netlify/functions/admin.mjs` | controlla la password e salva su GitHub |
+| `netlify/functions/visit.mjs` | conta le visite del sito (totali per giorno, senza cookie né dati personali, in Netlify Blobs) |
 
 ## Messa online (una volta sola)
 

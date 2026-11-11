@@ -1,0 +1,8 @@
+{
+  "name": "revesti",
+  "private": true,
+  "description": "Negozio ReVesti: sito statico + funzioni Netlify",
+  "dependencies": {
+    "@netlify/blobs": ">=8.1.0"
+  }
+}

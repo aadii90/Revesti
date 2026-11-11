@@ -160,6 +160,8 @@ const slug=t=>{let x=String(t||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLow
 let products=[],depts=[],shop={},filter="tutti",query="";
 let cart=[];try{cart=JSON.parse(localStorage.getItem("revesti-cart")||"[]")||[]}catch(e){}
 const saveCart=()=>{try{localStorage.setItem("revesti-cart",JSON.stringify(cart))}catch(e){}renderCartN()};
+function track(t,id){try{if(localStorage.getItem("revesti-owner"))return}catch(e){}
+  try{const b=JSON.stringify(id?{t,id}:{t});if(!(navigator.sendBeacon&&navigator.sendBeacon("/api/visit",b)))fetch("/api/visit",{method:"POST",body:b,keepalive:true}).catch(()=>{})}catch(e){}}
 function toast(t){const el=$("toast");el.textContent=t;el.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>el.hidden=true,2400)}
 const onSale=p=>p.prezzo_pieno&&p.prezzo_pieno>p.prezzo;
 const photos=p=>[p.foto,...(p.altre_foto||[])].filter(Boolean);
@@ -189,7 +191,7 @@ $("q").oninput=e=>{query=e.target.value;renderShop()};
 $("grid").onclick=e=>{const c=e.target.closest(".card");if(c)openProduct(c.dataset.id)};
 
 function openProduct(id){
-  const p=products.find(x=>x.id===id);if(!p)return;
+  const p=products.find(x=>x.id===id);if(!p)return;track("p",p.id);
   const sizes=p.taglie||[];let chosen=sizes.length===1?sizes[0]:null;const ph=photos(p);
   const m=$("pmodal");
   m.innerHTML=`<div class="modal" role="dialog" aria-label="${esc(p.nome)}">
@@ -245,6 +247,7 @@ $("cartScrim").onclick=e=>{
   if(e.target===s||e.target.closest("[data-close]")){s.hidden=true;return}
   const inc=e.target.closest("[data-inc]"),dec=e.target.closest("[data-dec]");
   if(inc||dec){const i=lines[+(inc?inc.dataset.inc:dec.dataset.dec)];const c=cart.find(x=>x.id===i.id&&x.size===i.size);c.qty+=inc?1:-1;if(c.qty<1)cart.splice(cart.indexOf(c),1);saveCart();renderDrawer()}
+  if(e.target.id==="waLink"||e.target.id==="mailLink")track("w");
   if(e.target.id==="emptyCart"){cart=[];saveCart();renderDrawer()}
   if(e.target.id==="copyBtn"){const ta=$("otext");navigator.clipboard.writeText(ta.value).then(()=>toast("Messaggio copiato"),()=>{ta.select();toast("Testo selezionato")})}
 };
@@ -264,7 +267,7 @@ Promise.all([getJSON("data/prodotti.json"),getJSON("data/reparti.json"),getJSON(
   renderDepts();renderShop();renderCartN();
   if(!pr)$("grid").innerHTML=`<div class="empty"><b>Catalogo non disponibile</b>Ricarica la pagina tra qualche istante.</div>`;
 });
-renderCartN();
+renderCartN();track("v");
 </script>
 </body>
 </html>

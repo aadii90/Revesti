@@ -126,6 +126,17 @@ td{padding:8px;border-bottom:1px solid var(--line);vertical-align:middle}
 .sz{min-width:46px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);font-weight:600;font-variant-numeric:tabular-nums}
 .sz[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 @media (max-width:640px){.szcols{grid-template-columns:1fr}.sz{min-width:50px;padding:10px}}
+.vchart{display:flex;align-items:flex-end;gap:2px;height:140px;border-bottom:1px solid var(--line)}
+.vcol{flex:1;min-width:0;height:100%;display:flex;align-items:flex-end;background:none;border:0;padding:0}
+.vcol i{display:block;width:100%;background:var(--accent);border-radius:4px 4px 0 0;min-height:2px}
+.vcol.zero i{background:var(--line)}
+.vcol:hover i,.vcol:focus-visible i,.vcol[aria-pressed="true"] i{filter:brightness(.75)}
+.vlabels{display:flex;gap:2px}
+.vlabels span{flex:1;min-width:0;text-align:center;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.vtop{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid var(--line);color:var(--ink);font-size:14px}
+.vtop b{font-variant-numeric:tabular-nums}
+.vtable{max-height:260px;overflow:auto}
+@media (max-width:640px){#visPanel table{display:table;width:100%}#visPanel thead{display:table-header-group}#visPanel tbody{display:table-row-group}#visPanel tr{display:table-row;padding:0}#visPanel td,#visPanel th{display:table-cell;padding:8px;border-bottom:1px solid var(--line)}}
 .pubbar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -4px 16px rgba(0,0,0,.14);padding-bottom:env(safe-area-inset-bottom,0px)}
 .pubbar .wrap{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-block:12px;flex-wrap:wrap}
 #pubCount{font-weight:600}
@@ -159,7 +170,7 @@ body.haspub .toast{bottom:calc(120px + env(safe-area-inset-bottom,0px))}
     <div class="stat"><small>Prodotti</small><b id="s-tot">0</b></div>
     <div class="stat"><small>In vetrina</small><b id="s-act">0</b></div>
     <div class="stat"><small>Senza foto</small><b id="s-nophoto">0</b></div>
-    <div class="stat"><small>Reparti</small><b id="s-dep">0</b></div>
+    <div class="stat"><small>Visite oggi</small><b id="s-vis">–</b></div>
   </div>
 
   <section class="panel" id="formPanel" hidden>
@@ -201,6 +212,30 @@ body.haspub .toast{bottom:calc(120px + env(safe-area-inset-bottom,0px))}
       <thead><tr><th></th><th>Prodotto</th><th>Reparto</th><th class="num">Prezzo</th><th>Stato</th><th></th></tr></thead>
       <tbody id="atable"></tbody>
     </table></div>
+  </section>
+
+  <section class="panel" id="visPanel">
+    <div class="row between"><h2>Visite dei clienti</h2><button class="mini" id="visReload">Aggiorna</button></div>
+    <div class="stats">
+      <div class="stat"><small>Oggi</small><b id="v-today">–</b></div>
+      <div class="stat"><small>Ultimi 7 giorni</small><b id="v-7">–</b></div>
+      <div class="stat"><small>Ultimi 30 giorni</small><b id="v-30">–</b></div>
+      <div class="stat"><small>Ordini avviati (30 gg)</small><b id="v-ord">–</b></div>
+    </div>
+    <div style="display:grid;gap:6px">
+      <span class="szhead">Visite al giorno, ultime due settimane</span>
+      <div class="vchart" id="vchart" role="group" aria-label="Visite al giorno"></div>
+      <div class="vlabels" id="vlabels" aria-hidden="true"></div>
+      <div class="muted" id="vread" aria-live="polite">Tocca una colonna per vedere il dettaglio del giorno.</div>
+    </div>
+    <div style="display:grid;gap:6px">
+      <span class="szhead">Prodotti più guardati (30 giorni)</span>
+      <div id="vtop" class="muted">Ancora nessun dato.</div>
+    </div>
+    <details><summary class="muted" style="cursor:pointer">Tabella giorno per giorno</summary>
+      <div class="vtable"><table style="min-width:0"><thead><tr><th>Giorno</th><th class="num">Visite</th><th class="num">Ordini avviati</th></tr></thead><tbody id="vtbody"></tbody></table></div>
+    </details>
+    <p class="muted" style="margin:0">Una visita è un'apertura del sito. Non si usano cookie e non si salvano dati dei clienti. Le aperture fatte da questo dispositivo, dove hai fatto l'accesso al pannello, non vengono contate. «Ordini avviati» conta i tocchi su «Invia su WhatsApp» o «Invia per email».</p>
   </section>
 
   <section class="panel">
@@ -294,6 +329,8 @@ async function enter(){
         else{localStorage.removeItem(DRAFT);toast("Le modifiche non pubblicate sono state scartate: il catalogo è cambiato nel frattempo")}
       }}catch(_){}
     fillSettings();renderAll();renderBar();if(isDirty())publish();
+    try{localStorage.setItem("revesti-owner","1")}catch(_){}
+    loadStats();
   }catch(err){if(token)toast(err.message)}
   finally{busy("")}
 }
@@ -304,7 +341,7 @@ function renderAll(){
   $("s-tot").textContent=products.length;
   $("s-act").textContent=products.filter(p=>p.attivo!==false).length;
   $("s-nophoto").textContent=products.filter(p=>!p.foto).length;
-  $("s-dep").textContent=reparti.length;
+  
   const sel=$("f-cat"),cur=sel.value;sel.innerHTML=reparti.map(r=>`<option>${esc(r.nome)}</option>`).join("");if(reparti.some(r=>r.nome===cur))sel.value=cur;
   renderTable();renderDepts();
 }
@@ -322,6 +359,34 @@ function renderTable(){
     :`<tr><td colspan="6" class="muted" style="padding:20px;text-align:center">${products.length?"Nessun prodotto corrisponde al filtro.":"Nessun prodotto ancora. Premi «+ Aggiungi prodotto» per inserire il primo."}</td></tr>`;
 }
 $("aq").oninput=renderTable;
+
+/* visite */
+let statDays=[];
+const fmtDay=g=>new Date(g+"T12:00:00").toLocaleDateString("it-IT",{weekday:"short",day:"numeric",month:"short"});
+const plural=(n,a,b)=>`${n} ${n===1?a:b}`;
+async function loadStats(){
+  try{const d=await api("stats");statDays=d.giorni||[];renderStats()}
+  catch(err){$("vread").textContent=err.message;$("s-vis").textContent="–"}
+}
+function renderStats(){
+  const sum=(a,k)=>a.reduce((t,d)=>t+(d[k]||0),0),last=n=>statDays.slice(-n);
+  const today=statDays.length?statDays[statDays.length-1].visite:0;
+  $("s-vis").textContent=today;$("v-today").textContent=today;$("v-7").textContent=sum(last(7),"visite");$("v-30").textContent=sum(statDays,"visite");$("v-ord").textContent=sum(statDays,"ordini");
+  const d14=last(14),max=Math.max(1,...d14.map(d=>d.visite));
+  $("vchart").innerHTML=d14.map((d,i)=>`<button type="button" class="vcol${d.visite?"":" zero"}" data-i="${i}" aria-pressed="false" aria-label="${esc(fmtDay(d.giorno))}: ${plural(d.visite,"visita","visite")}"><i style="height:${d.visite?Math.max(3,Math.round(d.visite/max*100)):0}%"></i></button>`).join("");
+  $("vlabels").innerHTML=d14.map(d=>`<span>${+d.giorno.slice(8)}</span>`).join("");
+  $("vread").textContent=sum(statDays,"visite")?`Giorno più visitato delle ultime due settimane: ${plural(max,"visita","visite")}. Tocca una colonna per il dettaglio.`:"Ancora nessuna visita registrata. I numeri compaiono appena qualcuno apre il sito.";
+  const tot={};for(const d of statDays)for(const [id,n] of Object.entries(d.prodotti||{}))tot[id]=(tot[id]||0)+n;
+  const top=Object.entries(tot).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  $("vtop").innerHTML=top.length?top.map(([id,n])=>{const p=products.find(x=>x.id===id);return `<div class="vtop"><span>${esc(p?p.nome:id+" (eliminato)")}</span><b>${n}</b></div>`}).join(""):"Ancora nessun dato.";
+  $("vtbody").innerHTML=[...statDays].reverse().map(d=>`<tr><td>${esc(fmtDay(d.giorno))}</td><td class="num">${d.visite}</td><td class="num">${d.ordini}</td></tr>`).join("");
+}
+function pickDay(e){const b=e.target.closest(".vcol");if(!b)return;const d=statDays.slice(-14)[+b.dataset.i];if(!d)return;
+  $("vchart").querySelectorAll(".vcol").forEach(x=>x.setAttribute("aria-pressed",x===b));
+  const visti=Object.values(d.prodotti||{}).reduce((a,n)=>a+n,0);
+  $("vread").textContent=`${fmtDay(d.giorno)}: ${plural(d.visite,"visita","visite")}, ${plural(visti,"prodotto aperto","prodotti aperti")}, ${plural(d.ordini,"ordine avviato","ordini avviati")}.`}
+$("vchart").addEventListener("click",pickDay);$("vchart").addEventListener("mouseover",pickDay);$("vchart").addEventListener("focusin",pickDay);
+$("visReload").onclick=loadStats;
 
 /* taglie */
 const LETTERS=["S","M","L","XL","XXL","XXXL"],NUMS=Array.from({length:21},(_,i)=>String(25+i));

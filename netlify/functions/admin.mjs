@@ -5,6 +5,7 @@
 //   GITHUB_REPO     facoltativa, default "aadii90/revesti"
 //   GITHUB_BRANCH   facoltativa, default "main"
 import crypto from "node:crypto";
+import { readStats } from "../lib/stats.mjs";
 
 const env = k => (globalThis.Netlify?.env?.get?.(k) ?? process.env[k] ?? "");
 const DATA_FILES = { prodotti: "data/prodotti.json", reparti: "data/reparti.json", negozio: "data/negozio.json" };
@@ -98,6 +99,15 @@ export default async (req) => {
   }
 
   if (!validToken(body.token, password)) return fail(401, "Sessione scaduta: accedi di nuovo");
+
+  if (action === "stats") {
+    try {
+      const { getStore } = await import("@netlify/blobs");
+      return json({ giorni: await readStats(getStore({ name: "visite", consistency: "strong" }), 30) });
+    } catch (e) {
+      return fail(500, "Statistiche non disponibili: " + (e?.message || "errore"));
+    }
+  }
   const gh = github();
 
   try {
