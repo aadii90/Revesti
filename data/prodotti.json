@@ -17,21 +17,6 @@
     "data": "2026-11-11T18:59:12.613Z"
   },
   {
-    "id": "cintura-lv",
-    "nome": "Cintura LV",
-    "reparto": "Cinture uomo",
-    "prezzo": 15,
-    "prezzo_pieno": null,
-    "taglie": [],
-    "foto": "/images/uploads/1794422167009-80f951-cintura-lv.jpg",
-    "altre_foto": [
-      "/images/uploads/1794422169299-bb51cc-cintura-lv.jpg"
-    ],
-    "descrizione": "Cintura bianca a scacchiera",
-    "attivo": true,
-    "data": "2026-11-11T18:36:10.918Z"
-  },
-  {
     "id": "slim-fit-jeans",
     "nome": "Slim fit jeans",
     "reparto": "Jeans ragazzi",
@@ -64,21 +49,6 @@
     "descrizione": "Scarpe tenute bene",
     "attivo": true,
     "data": "2026-11-11T15:50:31.106Z"
-  },
-  {
-    "id": "borsellino-gucci",
-    "nome": "Borsellino gucci",
-    "reparto": "Borselli",
-    "prezzo": 10,
-    "prezzo_pieno": null,
-    "taglie": [],
-    "foto": "/images/uploads/1794405095485-15f898-borsellino-gucci.jpg",
-    "altre_foto": [
-      "/images/uploads/1794405098027-ac5fa5-borsellino-gucci.jpg"
-    ],
-    "descrizione": "In ottime condizioni",
-    "attivo": true,
-    "data": "2026-11-11T13:51:39.995Z"
   },
   {
     "id": "jeans",
