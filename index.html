@@ -99,6 +99,27 @@ header.top .wrap{display:flex;align-items:center;gap:12px;padding-block:12px}
 .note{padding:10px 14px;border-radius:8px;background:var(--bg);font-size:13px;color:var(--muted)}
 footer{border-top:1px solid var(--line);padding-block:24px calc(24px + env(safe-area-inset-bottom,0px));color:var(--muted);font-size:13px}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:600;z-index:40;font-size:14px}
+@media (max-width:640px){
+  .search{flex-basis:100%;max-width:none;margin-left:0;font-size:16px;padding:10px 16px}
+  .chips{flex-wrap:nowrap;overflow-x:auto;width:100%;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:none;padding:8px 16px}
+  .hero{padding-block:24px 12px}
+  #pmodal{align-items:flex-end;padding:0}
+  .modal{border-radius:16px 16px 0 0;max-height:94vh;max-height:94dvh}
+  .modal .ph{width:100%;max-height:46vh}
+  .modal .info{padding:18px 16px calc(16px + env(safe-area-inset-bottom,0px))}
+  .modal h2{font-size:22px}
+  .size{min-width:48px;padding:10px 12px;font-size:14px}
+  #addBtn{position:sticky;bottom:calc(12px + env(safe-area-inset-bottom,0px));padding:14px;font-size:16px;box-shadow:0 0 0 12px var(--surface)}
+  .x{width:40px;height:40px;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+  .drawer{width:100%;padding-left:16px;padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .drawer .btn{flex:1 1 100%;text-align:center;padding:14px}
+  .qty button{width:34px;height:34px}
+  .ordertext{font-size:16px}
+  .mini{padding:8px 12px}
+  .cartbtn{padding:9px 14px}
+}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 <style id="catcss"></style>
