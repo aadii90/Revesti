@@ -1,5 +1,20 @@
 [
   {
+    "id": "cintura-lv",
+    "nome": "Cintura LV",
+    "reparto": "Cinture uomo",
+    "prezzo": 15,
+    "prezzo_pieno": null,
+    "taglie": [],
+    "foto": "/images/uploads/1794422167009-80f951-cintura-lv.jpg",
+    "altre_foto": [
+      "/images/uploads/1794422169299-bb51cc-cintura-lv.jpg"
+    ],
+    "descrizione": "Cintura bianca a scacchiera",
+    "attivo": true,
+    "data": "2026-11-11T18:36:10.918Z"
+  },
+  {
     "id": "slim-fit-jeans",
     "nome": "Slim fit jeans",
     "reparto": "Jeans ragazzi",
