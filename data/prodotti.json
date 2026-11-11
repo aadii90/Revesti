@@ -1,5 +1,20 @@
 [
   {
+    "id": "blazer",
+    "nome": "Blazer",
+    "reparto": "Donna",
+    "prezzo": 10,
+    "prezzo_pieno": null,
+    "taglie": [],
+    "foto": "/images/uploads/1794425120801-9bcd6f-blazer.jpg",
+    "altre_foto": [
+      "/images/uploads/1794425122648-9f8dcf-blazer.jpg"
+    ],
+    "descrizione": "Nuovo mai usato",
+    "attivo": true,
+    "data": "2026-11-11T19:25:24.587Z"
+  },
+  {
     "id": "cintura-tb",
     "nome": "Cintura TB",
     "reparto": "Accesori uomo",
