@@ -119,6 +119,13 @@ td{padding:8px;border-bottom:1px solid var(--line);vertical-align:middle}
   .pcell,.addph{width:calc((100% - 20px)/3)}
   .login form{padding:22px}
 }
+.szcols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:16px}
+.szcol{display:grid;gap:8px;align-content:start;border:1px solid var(--line);border-radius:10px;padding:12px}
+.szhead{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.szgrid{display:flex;flex-wrap:wrap;gap:6px}
+.sz{min-width:46px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);font-weight:600;font-variant-numeric:tabular-nums}
+.sz[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+@media (max-width:640px){.szcols{grid-template-columns:1fr}.sz{min-width:50px;padding:10px}}
 .pubbar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -4px 16px rgba(0,0,0,.14);padding-bottom:env(safe-area-inset-bottom,0px)}
 .pubbar .wrap{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-block:12px;flex-wrap:wrap}
 #pubCount{font-weight:600}
@@ -159,10 +166,17 @@ body.haspub .toast{bottom:calc(120px + env(safe-area-inset-bottom,0px))}
     <div class="row between"><h2 id="formTitle">Nuovo prodotto</h2><button class="mini" id="cancelForm">Annulla</button></div>
     <form class="form" id="pform">
       <label class="f full">Nome prodotto<input id="f-name" required maxlength="80" placeholder="Es. Giacca di jeans anni '90"></label>
-      <label class="f">Reparto<select id="f-cat" required></select></label>
-      <label class="f">Taglie <span class="hint">separate da virgola</span><input id="f-sizes" placeholder="S, M, L  oppure  4A, 6A"></label>
+      <label class="f full">Reparto<select id="f-cat" required></select></label>
       <label class="f">Prezzo (€)<input id="f-price" type="number" step="0.01" min="0" required></label>
       <label class="f">Prezzo pieno (€) <span class="hint">facoltativo, appare barrato</span><input id="f-old" type="number" step="0.01" min="0"></label>
+      <div class="full" style="display:grid;gap:10px">
+        <span style="font-size:13px;font-weight:600">Taglie disponibili <span class="hint">tocca quelle che hai, da una colonna o dall'altra</span></span>
+        <div class="szcols">
+          <div class="szcol"><span class="szhead">Vestiti (lettere)</span><div class="szgrid" id="sz-let"></div></div>
+          <div class="szcol"><span class="szhead">Scarpe (numeri)</span><div class="szgrid" id="sz-num"></div></div>
+        </div>
+        <label class="f">Altre taglie <span class="hint">facoltativo, separate da virgola: es. 4A, 6A, Taglia unica</span><input id="f-sizes" placeholder="4A, 6A"></label>
+      </div>
       <label class="f full">Descrizione<textarea id="f-desc" rows="3" maxlength="1200" placeholder="Condizioni, materiale, misure, eventuali difetti…"></textarea></label>
       <div class="full" style="display:grid;gap:6px">
         <span style="font-size:13px;font-weight:600">Foto <span class="hint">la prima è quella principale</span></span>
@@ -308,6 +322,16 @@ function renderTable(){
 }
 $("aq").oninput=renderTable;
 
+/* taglie */
+const LETTERS=["S","M","L","XL","XXL","XXXL"],NUMS=Array.from({length:21},(_,i)=>String(25+i));
+let selSizes=new Set();
+function renderSizes(){
+  const chip=t=>`<button type="button" class="sz" data-sz="${t}" aria-pressed="${selSizes.has(t)}">${t}</button>`;
+  $("sz-let").innerHTML=LETTERS.map(chip).join("");$("sz-num").innerHTML=NUMS.map(chip).join("");
+}
+document.querySelector(".szcols").onclick=e=>{const b=e.target.closest(".sz");if(!b)return;const t=b.dataset.sz;
+  selSizes.has(t)?selSizes.delete(t):selSizes.add(t);b.setAttribute("aria-pressed",selSizes.has(t))};
+
 /* form prodotto */
 function renderPhotos(){
   $("photos").innerHTML=photoList.map((ph,i)=>`<div class="pcell"><div class="ph"><img src="${esc(ph.preview||ph.path)}" ${ph.preview?"":`data-p="${esc(ph.path)}" ${FB}`} alt="">${i===0?`<span class="main">Principale</span>`:""}</div>
@@ -325,7 +349,8 @@ function openForm(p){
   photoList=p?[p.foto,...(p.altre_foto||[])].filter(Boolean).map(path=>({path})):[];
   $("formTitle").textContent=p?"Modifica prodotto":"Nuovo prodotto";
   $("f-name").value=p?p.nome:"";$("f-cat").value=p&&reparti.some(r=>r.nome===p.reparto)?p.reparto:(reparti[0]||{}).nome||"";
-  $("f-sizes").value=p?(p.taglie||[]).join(", "):"";$("f-price").value=p?p.prezzo:"";$("f-old").value=p&&p.prezzo_pieno?p.prezzo_pieno:"";
+  const tg=p?(p.taglie||[]).map(t=>String(t).trim()):[];const known=t=>LETTERS.includes(t.toUpperCase())||NUMS.includes(t);
+  selSizes=new Set(tg.filter(known).map(t=>t.toUpperCase()));$("f-sizes").value=tg.filter(t=>!known(t)).join(", ");renderSizes();$("f-price").value=p?p.prezzo:"";$("f-old").value=p&&p.prezzo_pieno?p.prezzo_pieno:"";
   $("f-desc").value=p?p.descrizione||"":"";$("f-active").checked=p?p.attivo!==false:true;$("formErr").textContent="";
   renderPhotos();$("formPanel").hidden=false;$("formPanel").scrollIntoView({behavior:"smooth",block:"start"});setTimeout(()=>$("f-name").focus(),300);
 }
@@ -348,7 +373,7 @@ $("pform").onsubmit=async e=>{
     let id=old?old.id:slug(nome).slice(0,60);if(!old){let b=id,i=2;while(products.some(p=>p.id===id))id=b+"-"+i++}
     const price=parseFloat($("f-price").value)||0,full=parseFloat($("f-old").value)||null;
     const item={id,nome,reparto:$("f-cat").value,prezzo:price,prezzo_pieno:full&&full>price?full:null,
-      taglie:$("f-sizes").value.split(",").map(s=>s.trim()).filter(Boolean),foto:paths[0]||"",altre_foto:paths.slice(1),
+      taglie:[...LETTERS.filter(t=>selSizes.has(t)),...NUMS.filter(t=>selSizes.has(t)),...$("f-sizes").value.split(",").map(s=>s.trim()).filter(t=>t&&!selSizes.has(t.toUpperCase()))],foto:paths[0]||"",altre_foto:paths.slice(1),
       descrizione:$("f-desc").value.trim(),attivo:$("f-active").checked,data:old&&old.data?old.data:new Date().toISOString()};
     const next=old?products.map(p=>p.id===id?item:p):[item,...products];
     products=next;pendingDeletes.push(...removedPhotos);mark("prodotti");
