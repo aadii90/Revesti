@@ -1,5 +1,23 @@
 [
   {
+    "id": "giacca-lv",
+    "nome": "Giacca LV",
+    "reparto": "Uomo",
+    "prezzo": 30,
+    "prezzo_pieno": 40,
+    "taglie": [
+      "S"
+    ],
+    "foto": "/images/uploads/1794513977244-397871-giacca-lv.jpg",
+    "altre_foto": [
+      "/images/uploads/1794513980605-178139-giacca-lv.jpg",
+      "/images/uploads/1794513984373-3219b7-giacca-lv.jpg"
+    ],
+    "descrizione": "Va bene anche per i ragazzini di 13-15 anni",
+    "attivo": true,
+    "data": "2026-11-12T20:06:28.256Z"
+  },
+  {
     "id": "diamond-jeans",
     "nome": "Diamond jeans",
     "reparto": "Jeans ragazzi",
