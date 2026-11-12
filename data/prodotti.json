@@ -1,5 +1,22 @@
 [
   {
+    "id": "smanicato",
+    "nome": "Smanicato",
+    "reparto": "Bambini",
+    "prezzo": 10,
+    "prezzo_pieno": null,
+    "taglie": [
+      "S"
+    ],
+    "foto": "/images/uploads/1794498706091-0ee20b-smanicato.jpg",
+    "altre_foto": [
+      "/images/uploads/1794498709732-feb52a-smanicato.jpg"
+    ],
+    "descrizione": "Usabile da entrambe le parti sia bianco che nero per bambini da 10 a 12 anni",
+    "attivo": true,
+    "data": "2026-11-12T15:51:51.974Z"
+  },
+  {
     "id": "jeans-2",
     "nome": "Jeans",
     "reparto": "Bambini",
