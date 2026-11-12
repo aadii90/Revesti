@@ -1,5 +1,23 @@
 [
   {
+    "id": "diamond-jeans",
+    "nome": "Diamond jeans",
+    "reparto": "Jeans ragazzi",
+    "prezzo": 20,
+    "prezzo_pieno": null,
+    "taglie": [
+      "28"
+    ],
+    "foto": "/images/uploads/1794502512883-25f8de-diamond-jeans.jpg",
+    "altre_foto": [
+      "/images/uploads/1794502515460-9de8ec-diamond-jeans.jpg",
+      "/images/uploads/1794502517917-1e8c30-diamond-jeans.jpg"
+    ],
+    "descrizione": "Per ragazzi si 13-14 anni",
+    "attivo": true,
+    "data": "2026-11-12T16:55:19.766Z"
+  },
+  {
     "id": "capellino-polo",
     "nome": "Capellino polo",
     "reparto": "Accesori uomo",
