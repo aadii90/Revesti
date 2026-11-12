@@ -1,5 +1,25 @@
 [
   {
+    "id": "tuta-hoodrich",
+    "nome": "Tuta HOODRICH",
+    "reparto": "Bambini",
+    "prezzo": 20,
+    "prezzo_pieno": 25,
+    "taglie": [
+      "L"
+    ],
+    "foto": "/images/uploads/1794494706119-dbc64c-tuta-hoodrich.jpg",
+    "altre_foto": [
+      "/images/uploads/1794494709660-ea50be-tuta-hoodrich.jpg",
+      "/images/uploads/1794494712677-d1fa33-tuta-hoodrich.jpg",
+      "/images/uploads/1794494715212-ee2b6b-tuta-hoodrich.jpg",
+      "/images/uploads/1794494717758-c55419-tuta-hoodrich.jpg"
+    ],
+    "descrizione": "Perfetta per questa stagione e adatta a ragazzini di 12-13",
+    "attivo": true,
+    "data": "2026-11-12T14:45:19.379Z"
+  },
+  {
     "id": "capellino-tb",
     "nome": "Capellino TB",
     "reparto": "Accesori uomo",
