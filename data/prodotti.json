@@ -1,5 +1,23 @@
 [
   {
+    "id": "maglietta-burberry",
+    "nome": "Maglietta burberry",
+    "reparto": "Uomo",
+    "prezzo": 20,
+    "prezzo_pieno": 25,
+    "taglie": [
+      "S"
+    ],
+    "foto": "/images/uploads/1794518043993-88d68d-maglietta-burberry.jpg",
+    "altre_foto": [
+      "/images/uploads/1794518045938-536572-maglietta-burberry.jpg",
+      "/images/uploads/1794518047977-f80ea4-maglietta-burberry.jpg"
+    ],
+    "descrizione": "Mai usata",
+    "attivo": true,
+    "data": "2026-11-12T21:14:09.478Z"
+  },
+  {
     "id": "giacca-lv",
     "nome": "Giacca LV",
     "reparto": "Uomo",
