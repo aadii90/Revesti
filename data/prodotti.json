@@ -1,5 +1,20 @@
 [
   {
+    "id": "capellino-tb",
+    "nome": "Capellino TB",
+    "reparto": "Accesori uomo",
+    "prezzo": 20,
+    "prezzo_pieno": 35,
+    "taglie": [],
+    "foto": "/images/uploads/1794487901442-52210a-capellino-tb.jpg",
+    "altre_foto": [
+      "/images/uploads/1794487903622-a6dba3-capellino-tb.jpg"
+    ],
+    "descrizione": "Mai usato",
+    "attivo": true,
+    "data": "2026-11-12T12:51:45.155Z"
+  },
+  {
     "id": "giacca-lacoste",
     "nome": "Giacca Lacoste",
     "reparto": "Uomo",
