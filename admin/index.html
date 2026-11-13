@@ -183,8 +183,8 @@ body.haspub .toast{bottom:calc(120px + env(safe-area-inset-bottom,0px))}
 
 <main class="dash wrap" id="dash" hidden>
   <div class="stats">
-    <div class="stat"><small>Prodotti</small><b id="s-tot">0</b></div>
-    <div class="stat"><small>In vetrina</small><b id="s-act">0</b></div>
+    <div class="stat"><small>In vendita</small><b id="s-act">0</b></div>
+    <div class="stat"><small>Da consegnare</small><b id="s-sold">0</b></div>
     <div class="stat"><small>Da approvare</small><b id="s-pend">–</b></div>
     <div class="stat"><small>Visite oggi</small><b id="s-vis">–</b></div>
   </div>
@@ -214,6 +214,12 @@ body.haspub .toast{bottom:calc(120px + env(safe-area-inset-bottom,0px))}
       <label class="check full"><input type="checkbox" id="f-active" checked> Mostra in vetrina</label>
       <div class="full row"><button class="btn" id="saveBtn" type="submit">Salva prodotto</button><span class="err" id="formErr"></span></div>
     </form>
+  </section>
+
+  <section class="panel" id="soldPanel">
+    <h2>Venduti, da consegnare</h2>
+    <div id="soldList" class="muted">Nessun capo venduto in attesa di consegna.</div>
+    <p class="muted" style="margin:0">Quando vendi un capo premi «Venduto» nel catalogo: resta qui finché il cliente non lo ritira. Dopo la consegna premi «Consegnato» e il capo viene tolto dal negozio.</p>
   </section>
 
   <section class="panel">
@@ -367,8 +373,9 @@ async function enter(){
 /* render */
 function renderAll(){
   $("catcss").textContent=reparti.map((r,i)=>`.cat-${slug(r.nome)}{color:var(--c${i%6})}`).join("\n");
-  $("s-tot").textContent=products.length;
-  $("s-act").textContent=products.filter(p=>p.attivo!==false).length;
+  $("s-act").textContent=products.filter(p=>p.attivo!==false&&!p.venduto).length;
+  $("s-sold").textContent=products.filter(p=>p.venduto).length;
+  renderSold();
   
   
   const sel=$("f-cat"),cur=sel.value;sel.innerHTML=reparti.map(r=>`<option>${esc(r.nome)}</option>`).join("");if(reparti.some(r=>r.nome===cur))sel.value=cur;
@@ -377,17 +384,40 @@ function renderAll(){
 function thumb(p){return p.foto?`<img src="${esc(p.foto)}" data-p="${esc(p.foto)}" alt="" ${FB}>`:esc((p.nome||"?")[0].toUpperCase())}
 function renderTable(){
   const q=$("aq").value.toLowerCase();
-  const list=products.filter(p=>!q||(p.nome||"").toLowerCase().includes(q));
+  const list=products.filter(p=>!p.venduto&&(!q||(p.nome||"").toLowerCase().includes(q)));
   $("atable").innerHTML=list.length?list.map(p=>`<tr>
     <td><div class="thumb">${thumb(p)}</div></td>
     <td style="font-weight:600">${esc(p.nome)}${(p.taglie||[]).length?`<div class="muted" style="font-weight:400">${esc(p.taglie.join(", "))}</div>`:""}</td>
     <td class="cat-${slug(p.reparto)}" style="font-weight:600">${esc(p.reparto)}</td>
     <td class="num">${eur.format(p.prezzo||0)}${p.prezzo_pieno>p.prezzo?`<div class="muted"><s>${eur.format(p.prezzo_pieno)}</s></div>`:""}</td>
     <td><button class="mini" data-toggle="${esc(p.id)}" title="Mostra o nascondi"><span class="pill ${p.attivo!==false?"on":"off"}">${p.attivo!==false?"In vetrina":"Nascosto"}</span></button></td>
-    <td style="white-space:nowrap"><button class="mini" data-edit="${esc(p.id)}">Modifica</button> <button class="mini danger" data-del="${esc(p.id)}">Elimina</button></td></tr>`).join("")
-    :`<tr><td colspan="6" class="muted" style="padding:20px;text-align:center">${products.length?"Nessun prodotto corrisponde al filtro.":"Nessun prodotto ancora. Premi «+ Aggiungi prodotto» per inserire il primo."}</td></tr>`;
+    <td style="white-space:nowrap"><button class="mini ok" data-sold="${esc(p.id)}">Venduto</button> <button class="mini" data-edit="${esc(p.id)}">Modifica</button> <button class="mini danger" data-del="${esc(p.id)}">Elimina</button></td></tr>`).join("")
+    :`<tr><td colspan="6" class="muted" style="padding:20px;text-align:center">${q?"Nessun prodotto corrisponde al filtro.":products.length?"Tutti i capi sono venduti: aggiungine di nuovi.":"Nessun prodotto ancora. Premi «+ Aggiungi prodotto» per inserire il primo."}</td></tr>`;
 }
 $("aq").oninput=renderTable;
+
+/* venduti da consegnare */
+let confirmDeliver=null;
+const fmtSold=d=>{try{return new Date(d).toLocaleDateString("it-IT",{weekday:"short",day:"numeric",month:"short"})+" alle "+new Date(d).toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"})}catch(e){return ""}};
+function renderSold(){
+  const sold=products.filter(p=>p.venduto).sort((a,b)=>String(a.venduto).localeCompare(String(b.venduto)));
+  $("soldList").innerHTML=sold.length?sold.map(p=>`<div class="pend">
+    <div class="thumb">${thumb(p)}</div>
+    <div style="min-width:0"><div style="font-weight:600">${esc(p.nome)}</div>
+      <div class="muted">${esc(p.reparto)} · ${eur.format(p.prezzo||0)}${(p.taglie||[]).length?" · "+esc(p.taglie.join(", ")):""}</div>
+      <div class="muted">Venduto ${esc(fmtSold(p.venduto))}</div>
+      <div class="pacts"><button class="mini ok" data-deliver="${esc(p.id)}">${confirmDeliver===p.id?"Conferma: consegnato":"Consegnato"}</button><button class="mini" data-unsell="${esc(p.id)}">Rimetti in vendita</button></div>
+    </div></div>`).join(""):"Nessun capo venduto in attesa di consegna.";
+}
+$("soldList").onclick=e=>{
+  const dv=e.target.closest("[data-deliver]"),un=e.target.closest("[data-unsell]");
+  if(un){products=products.map(p=>p.id===un.dataset.unsell?{...p,venduto:null}:p);mark("prodotti");renderAll();toast("Il capo è di nuovo in vendita")}
+  if(dv){const id=dv.dataset.deliver;
+    if(confirmDeliver!==id){confirmDeliver=id;renderSold();setTimeout(()=>{if(confirmDeliver===id){confirmDeliver=null;renderSold()}},4000);return}
+    confirmDeliver=null;const p=products.find(x=>x.id===id);
+    products=products.filter(x=>x.id!==id);pendingDeletes.push(...[p.foto,...(p.altre_foto||[])].filter(Boolean));mark("prodotti");
+    if(editing===id)closeForm();renderAll();toast("Consegnato: il capo è stato tolto dal negozio")}
+};
 
 /* venditori */
 let sellers=[],rejecting=null,confirmSel=null;
@@ -523,7 +553,9 @@ $("pform").onsubmit=async e=>{
 /* azioni tabella */
 let confirmDel=null;
 $("atable").onclick=async e=>{
-  const ed=e.target.closest("[data-edit]"),dl=e.target.closest("[data-del]"),tg=e.target.closest("[data-toggle]");
+  const ed=e.target.closest("[data-edit]"),dl=e.target.closest("[data-del]"),tg=e.target.closest("[data-toggle]"),sd=e.target.closest("[data-sold]");
+  if(sd){const id=sd.dataset.sold;products=products.map(p=>p.id===id?{...p,venduto:new Date().toISOString()}:p);mark("prodotti");
+    if(editing===id)closeForm();renderAll();toast("Segnato come venduto: lo trovi in «Venduti, da consegnare»");return}
   if(ed)openForm(products.find(p=>p.id===ed.dataset.edit));
   if(tg){const id=tg.dataset.toggle;const next=products.map(p=>p.id===id?{...p,attivo:p.attivo===false}:p);
     products=next;mark("prodotti");renderAll()}
