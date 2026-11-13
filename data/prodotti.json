@@ -4,7 +4,7 @@
     "nome": "Giacca invernale supply",
     "reparto": "Uomo",
     "prezzo": 35,
-    "prezzo_pieno": null,
+    "prezzo_pieno": 40,
     "taglie": [
       "S"
     ],
