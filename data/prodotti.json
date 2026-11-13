@@ -1,5 +1,22 @@
 [
   {
+    "id": "giacca-invernale-supply",
+    "nome": "Giacca invernale supply",
+    "reparto": "Uomo",
+    "prezzo": 35,
+    "prezzo_pieno": null,
+    "taglie": [
+      "S"
+    ],
+    "foto": "/images/uploads/1794580017066-5d7251-giacca-invernale-supply.jpg",
+    "altre_foto": [
+      "/images/uploads/1794580019470-8d7181-giacca-invernale-supply.jpg"
+    ],
+    "descrizione": "Anche per ragazzi di 12-14 anni",
+    "attivo": true,
+    "data": "2026-11-13T14:27:01.182Z"
+  },
+  {
     "id": "maglietta-burberry",
     "nome": "T-shirt burberry",
     "reparto": "Uomo",
