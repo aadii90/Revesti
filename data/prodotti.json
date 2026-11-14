@@ -238,22 +238,6 @@
     "venduto": "2026-11-13T15:18:39.073Z"
   },
   {
-    "id": "borsetta-diesel",
-    "nome": "Borsetta Diesel",
-    "reparto": "Accesori donna",
-    "prezzo": 10,
-    "prezzo_pieno": null,
-    "taglie": [],
-    "foto": "/images/uploads/1794424065106-197254-borsetta-diesel.jpg",
-    "altre_foto": [
-      "/images/uploads/1794424067718-7c4835-borsetta-diesel.jpg"
-    ],
-    "descrizione": "Nuova",
-    "attivo": true,
-    "data": "2026-11-11T19:07:49.601Z",
-    "venduto": "2026-11-14T12:51:58.097Z"
-  },
-  {
     "id": "giacca-invernale",
     "nome": "Giacca invernale",
     "reparto": "Donna",
