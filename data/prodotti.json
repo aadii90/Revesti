@@ -1,5 +1,18 @@
 [
   {
+    "id": "borsetta-pinco",
+    "nome": "Borsetta pinco",
+    "reparto": "Accesori donna",
+    "prezzo": 15,
+    "prezzo_pieno": null,
+    "taglie": [],
+    "foto": "/images/uploads/1794706378363-55765c-borsetta-pinco.jpg",
+    "altre_foto": [],
+    "descrizione": "",
+    "attivo": true,
+    "data": "2026-11-15T01:32:59.657Z"
+  },
+  {
     "id": "borsetta",
     "nome": "Borsetta",
     "reparto": "Accesori donna",
