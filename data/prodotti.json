@@ -1,5 +1,20 @@
 [
   {
+    "id": "borsetta",
+    "nome": "Borsetta",
+    "reparto": "Accesori donna",
+    "prezzo": 15,
+    "prezzo_pieno": null,
+    "taglie": [],
+    "foto": "/images/uploads/1794706303623-c520dc-borsetta.jpg",
+    "altre_foto": [
+      "/images/uploads/1794706306447-418780-borsetta.jpg"
+    ],
+    "descrizione": "Mai usata",
+    "attivo": true,
+    "data": "2026-11-15T01:31:48.081Z"
+  },
+  {
     "id": "giacca-invernale-supply",
     "nome": "Giacca invernale supply",
     "reparto": "Uomo",
